@@ -7,7 +7,7 @@
     "build:ui": "pnpm --filter ui build",
     "lint:ui": "pnpm --filter ui lint",
     "preview:ui": "pnpm --filter ui preview",
-    "deploy": "wrangler deploy --minify",
+    "deploy": "pnpm build:ui && wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {

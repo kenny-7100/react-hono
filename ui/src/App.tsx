@@ -6,6 +6,28 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [apiMessage, setApiMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function callHelloApi() {
+    setIsLoading(true)
+    setApiMessage('')
+
+    try {
+      const response = await fetch('/api/hello')
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`)
+      }
+
+      const data = (await response.json()) as { message: string }
+      setApiMessage(data.message)
+    } catch (error) {
+      setApiMessage(error instanceof Error ? error.message : 'Request failed')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <>
@@ -21,13 +43,21 @@ function App() {
             Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+        <div className="actions">
+          <button
+            type="button"
+            className="counter"
+            onClick={() => setCount((count) => count + 1)}
+          >
+            Count is {count}
+          </button>
+          <button type="button" onClick={callHelloApi} disabled={isLoading}>
+            {isLoading ? 'Calling API...' : 'Call API'}
+          </button>
+        </div>
+        <output className="api-result" aria-live="polite">
+          {apiMessage}
+        </output>
       </section>
 
       <div className="ticks"></div>

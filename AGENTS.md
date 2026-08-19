@@ -1,5 +1,5 @@
 # AGENTS.md
-This is a TypeScript + React Compiler SPA project created with Vite.
+This is a TypeScript monorepo with a Hono backend for Cloudflare Workers and a Vite + React Compiler SPA in `ui/`.
 
 1. Do not run side-effecting git commands unless explicitly requested. Inspection-only git commands are always allowed.
 2. If the user explicitly says `push`, automatically run `git add .`, create a commit with an appropriate commit message, and push the commit to the configured remote.

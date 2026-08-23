@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  build: {
+    cssMinify: 'esbuild',
+  },
   server: {
     proxy: {
       '/api': 'http://localhost:8787',

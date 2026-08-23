@@ -1,3 +1,31 @@
+.page-link {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--text-h);
+  text-decoration: none;
+}
+
+.page-link:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.content-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 48px 20px;
+}
+
+.content-page { min-height: 420px; }
+.content-page h1 { margin: 16px 0; }
+.content-page > p:not(.eyebrow) { max-width: 620px; }
+.eyebrow { color: var(--accent); font-weight: 600; }
+.page-link { margin-top: 24px; }
+
 .actions {
   display: flex;
   gap: 8px;

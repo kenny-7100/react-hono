@@ -62,12 +62,24 @@
 
   &--maximized { inset: 0 0 30px; width: auto; transform: none; }
   .title-bar-text { display: flex; align-items: center; gap: 5px; }
-  .window-body { margin: 0; min-height: 285px; padding: 0; background: #fff; }
-  .status-bar { margin: 3px; }
+  .window-body { box-sizing: border-box; width: calc(100% - 6px); margin: 0 3px; min-height: 285px; padding: 0; background: #fff; }
+  .status-bar {
+    box-sizing: border-box;
+    height: 23px;
+    margin: 3px;
+    padding: 2px 1px;
+  }
+  .status-bar-field { box-sizing: border-box; height: 100%; line-height: 17px; }
 }
 
 .xp-menu-bar {
   display: flex;
+  align-items: center;
+  gap: 3px;
+  box-sizing: border-box;
+  width: calc(100% - 6px);
+  height: 28px;
+  margin-inline: 3px;
   padding: 1px 4px;
   border-bottom: 1px solid #aca899;
   background: #ece9d8;
@@ -142,7 +154,6 @@
 
 .xp-taskbar__apps { display: flex; flex: 1; gap: 3px; min-width: 0; padding: 3px 8px; }
 .xp-taskbar__apps button { overflow: hidden; width: min(180px, 25vw); min-width: 0; min-height: 24px; padding: 0 8px; border-radius: 2px; box-shadow: inset 1px 1px rgba(255,255,255,.3); background: #3c81e9; color: white; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
-.xp-taskbar__apps button.active { background: #1855be; box-shadow: inset 1px 1px 2px #0d3f96; }
 .xp-tray { display: flex; align-items: center; gap: 8px; min-width: 86px; padding: 0 10px; border-left: 1px solid #0d76d5; background: linear-gradient(#19a8e9, #0d8dd8 15%, #0b77c5); color: white; box-shadow: inset 1px 0 rgba(255,255,255,.35); }
 
 .xp-taskbar button:hover,
@@ -156,6 +167,24 @@
   border-color: transparent !important;
   outline: 0 !important;
   box-shadow: none !important;
+}
+
+.xp-taskbar__apps button:hover,
+.xp-taskbar__apps button:focus,
+.xp-taskbar__apps button:focus-visible {
+  background: #3c81e9 !important;
+  color: white !important;
+}
+
+.xp-taskbar__apps button:active {
+  background: #1855be !important;
+  color: white !important;
+}
+
+.xp-taskbar__apps button.active {
+  background: #1855be !important;
+  color: white !important;
+  box-shadow: inset 1px 1px 2px #0d3f96 !important;
 }
 
 .xp-start-menu { position: absolute; z-index: 3; bottom: 30px; left: 0; width: 380px; max-width: calc(100vw - 12px); border: 2px solid #1f56b5; border-radius: 7px 7px 0 0; background: white; box-shadow: 3px -2px 12px rgba(0,0,0,.4); overflow: hidden; }

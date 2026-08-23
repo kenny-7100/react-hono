@@ -10,6 +10,10 @@ export const router = createBrowserRouter([
     lazy: () => import('./pages/About'),
   },
   {
+    path: '/xp',
+    lazy: () => import('./pages/XpDesktop'),
+  },
+  {
     path: '*',
     lazy: () => import('./pages/NotFound'),
   },

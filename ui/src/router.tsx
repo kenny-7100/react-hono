@@ -10,6 +10,10 @@ export const router = createBrowserRouter([
     lazy: () => import('./pages/About'),
   },
   {
+    path: '/blog/:id',
+    lazy: () => import('./pages/Blog'),
+  },
+  {
     path: '*',
     lazy: () => import('./pages/NotFound'),
   },

@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
+import styles from './index.module.scss'
 
 function NotFound() {
   return (
-    <main className="content-page">
-      <p className="eyebrow">404</p>
+    <main className={styles.page}>
+      <p className={styles.eyebrow}>404</p>
       <h1>Page not found</h1>
       <p>The page you requested does not exist.</p>
-      <Link className="page-link" to="/">Return home</Link>
+      <Link className={styles.pageLink} to="/">Return home</Link>
     </main>
   )
 }

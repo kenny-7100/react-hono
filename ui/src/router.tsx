@@ -14,6 +14,10 @@ export const router = createBrowserRouter([
     lazy: () => import('./pages/Blog'),
   },
   {
+    path: '/dream-generate',
+    lazy: () => import('./pages/DreamGenerate'),
+  },
+  {
     path: '*',
     lazy: () => import('./pages/NotFound'),
   },

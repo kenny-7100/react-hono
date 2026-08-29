@@ -7,6 +7,13 @@ interface LimitOrder {
   timestamp: number;
 }
 
+interface MarketOrder {
+  orderId: string;
+  side: 'BUY' | 'SELL';
+  amount: bigint;
+  timestamp: number;
+}
+
 class Matcher {
   private askOrderList: LimitOrder[] = [];
   private bidOrderList: LimitOrder[] = [];
@@ -30,6 +37,10 @@ class Matcher {
     let index = 0;
     for (; index < this.askOrderList.length && askOrder.price >= this.askOrderList[index].price; ++index);
     this.askOrderList.splice(index, 0, askOrder);
+  }
+
+  public Market(marketOrder: MarketOrder) {
+
   }
 }
 

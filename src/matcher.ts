@@ -32,13 +32,15 @@ class Matcher {
 
   public Market(marketOrder: Order) {
     if (marketOrder.action === 'BUY') {
-      return this.buyMarketOrder(marketOrder);
+      return this.marketBuy(marketOrder);
     } else if (marketOrder.action === 'SELL') {
-      return this.sellMarketOrder(marketOrder);
+      return this.marketSell(marketOrder);
+    } else {
+      return [];
     }
   }
 
-  private buyMarketOrder(buyOrder: Order) {
+  private marketBuy(buyOrder: Order) {
     const filledOrders: Order[] = [];
     let buyAmount = buyOrder.amount;
     while (this.askOrderList.length > 0 && buyAmount > 0n) {
@@ -55,7 +57,7 @@ class Matcher {
     return filledOrders;
   }
 
-  private sellMarketOrder(sellOrder: Order) {
+  private marketSell(sellOrder: Order) {
     const filledOrders: Order[] = [];
     let sellAmount = sellOrder.amount;
     while (this.bidOrderList.length > 0 && sellAmount > 0n) {

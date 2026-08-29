@@ -53,7 +53,8 @@ class Matcher {
     let index = 0;
     for (; index < this.bidOrderList.length && order.price <= this.bidOrderList[index].price; ++index);
     this.bidOrderList.splice(index, 0, order);
-    return dealt.amount === 0n ? { order } : { order, dealt };
+    const resultOrder = { ...order };
+    return dealt.amount === 0n ? { order: resultOrder } : { order: resultOrder, dealt };
   }
 
   private limitAsk(askOrder: Order): LimitResult {
@@ -77,7 +78,8 @@ class Matcher {
     let index = 0;
     for (; index < this.askOrderList.length && order.price >= this.askOrderList[index].price; ++index);
     this.askOrderList.splice(index, 0, order);
-    return dealt.amount === 0n ? { order } : { order, dealt };
+    const resultOrder = { ...order };
+    return dealt.amount === 0n ? { order: resultOrder } : { order: resultOrder, dealt };
   }
 
   public Market(marketOrder: Order) {

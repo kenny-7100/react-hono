@@ -14,19 +14,19 @@ class Matcher {
   public Limit(limitOrder: LimitOrder) {
     const order: LimitOrder = { ...limitOrder, timestamp: Date.now() };
     if (order.side === 'BUY') {
-      this.buyLimitOrder(order);
+      this.bidLimitOrder(order);
     } else if (order.side === 'SELL') {
-      this.sellLimitOrder(order);
+      this.askLimitOrder(order);
     }
   }
 
-  private buyLimitOrder(bidOrder: LimitOrder) {
+  private bidLimitOrder(bidOrder: LimitOrder) {
     let index = 0;
     for (; index < this.bidOrderList.length && bidOrder.price <= this.bidOrderList[index].price; ++index);
     this.bidOrderList.splice(index, 0, bidOrder);
   }
 
-  private sellLimitOrder(askOrder: LimitOrder) {
+  private askLimitOrder(askOrder: LimitOrder) {
     let index = 0;
     for (; index < this.askOrderList.length && askOrder.price >= this.askOrderList[index].price; ++index);
     this.askOrderList.splice(index, 0, askOrder);

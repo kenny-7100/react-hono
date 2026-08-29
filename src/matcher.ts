@@ -20,6 +20,14 @@ class Matcher {
   private askOrderList: Order[] = [];
   private bidOrderList: Order[] = [];
 
+  public get AskOrderList(): Order[] {
+    return this.askOrderList.map((order) => ({ ...order }));
+  }
+
+  public get BidOrderList(): Order[] {
+    return this.bidOrderList.map((order) => ({ ...order }));
+  }
+
   public Limit(limitOrder: Order) {
     this.validateAmount(limitOrder);
     this.validatePrice(limitOrder);

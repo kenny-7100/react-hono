@@ -10,7 +10,7 @@ function Home() {
     setApiMessage('');
 
     try {
-      const response = await fetch('/api/hello');
+      const response = await fetch('/api/hello', { method: 'POST' });
       if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
 
       const data = (await response.json()) as { message: string };

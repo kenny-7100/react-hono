@@ -4,7 +4,6 @@ interface Order {
   action: 'BID' | 'ASK' | 'BUY' | 'SELL';
   price: bigint;
   amount: bigint;
-  timestamp: number;
 }
 
 class Matcher {
@@ -12,11 +11,10 @@ class Matcher {
   private bidOrderList: Order[] = [];
 
   public Limit(limitOrder: Order) {
-    const order: Order = { ...limitOrder, timestamp: Date.now() };
-    if (order.action === 'BID') {
-      this.bidLimitOrder(order);
-    } else if (order.action === 'ASK') {
-      this.askLimitOrder(order);
+    if (limitOrder.action === 'BID') {
+      this.bidLimitOrder(limitOrder);
+    } else if (limitOrder.action === 'ASK') {
+      this.askLimitOrder(limitOrder);
     }
   }
 

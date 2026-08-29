@@ -1,7 +1,7 @@
 
 interface Order {
   orderId: string;
-  action: 'BID' | 'ASK' | 'BUY' | 'SELL';
+  action: 'BID' | 'ASK' | 'BUY' | 'SELL' | 'FILLED' | 'PARTIALLY_FILLED';
   price: bigint;
   amount: bigint;
 }
@@ -47,10 +47,10 @@ class Matcher {
       const ask1Order = this.askOrderList[0];
       if (ask1Order.amount <= buyAmount) {
         buyAmount -= ask1Order.amount;
-        filledOrders.push(this.askOrderList.shift()!);
+        filledOrders.push({ ...this.askOrderList.shift()!, action: 'FILLED' });
       } else {
         ask1Order.amount -= buyAmount;
-        filledOrders.push({ ...ask1Order, amount: buyAmount });
+        filledOrders.push({ ...ask1Order, amount: buyAmount, action: 'PARTIALLY_FILLED' });
         buyAmount = 0n;
       }
     }
@@ -64,10 +64,10 @@ class Matcher {
       const bid1Order = this.bidOrderList[0];
       if (bid1Order.amount <= sellAmount) {
         sellAmount -= bid1Order.amount;
-        filledOrders.push(this.bidOrderList.shift()!);
+        filledOrders.push({ ...this.bidOrderList.shift()!, action: 'FILLED' });
       } else {
         bid1Order.amount -= sellAmount;
-        filledOrders.push({ ...bid1Order, amount: sellAmount });
+        filledOrders.push({ ...bid1Order, amount: sellAmount, action: 'PARTIALLY_FILLED' });
         sellAmount = 0n;
       }
     }

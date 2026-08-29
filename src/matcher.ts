@@ -1,7 +1,7 @@
 
 interface Order {
   orderId: string;
-  side: 'BUY' | 'SELL';
+  action: 'BID' | 'ASK' | 'BUY' | 'SELL';
   price: bigint;
   amount: bigint;
   timestamp: number;
@@ -13,9 +13,9 @@ class Matcher {
 
   public Limit(limitOrder: Order) {
     const order: Order = { ...limitOrder, timestamp: Date.now() };
-    if (order.side === 'BUY') {
+    if (order.action === 'BID') {
       this.bidLimitOrder(order);
-    } else if (order.side === 'SELL') {
+    } else if (order.action === 'ASK') {
       this.askLimitOrder(order);
     }
   }
@@ -33,9 +33,9 @@ class Matcher {
   }
 
   public Market(marketOrder: Order) {
-    if (marketOrder.side === 'BUY') {
+    if (marketOrder.action === 'BUY') {
       return this.buyMarketOrder(marketOrder);
-    } else if (marketOrder.side === 'SELL') {
+    } else if (marketOrder.action === 'SELL') {
       return this.sellMarketOrder(marketOrder);
     }
   }

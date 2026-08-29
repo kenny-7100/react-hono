@@ -28,7 +28,7 @@ class Matcher {
     } else if (limitOrder.action === 'ASK') {
       return this.limitAsk(limitOrder);
     } else {
-      return { };
+      throw new RangeError(`Invalid action for limit order: ${limitOrder.action}`);
     }
   }
 
@@ -87,7 +87,7 @@ class Matcher {
     } else if (marketOrder.action === 'SELL') {
       return this.marketSell(marketOrder);
     } else {
-      return { amount: 0n, filledOrders: [] };
+      throw new RangeError(`Invalid action for market order: ${marketOrder.action}`);
     }
   }
 

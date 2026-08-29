@@ -1,5 +1,5 @@
 
-interface LimitOrder {
+interface Order {
   orderId: string;
   side: 'BUY' | 'SELL';
   price: bigint;
@@ -7,19 +7,12 @@ interface LimitOrder {
   timestamp: number;
 }
 
-interface MarketOrder {
-  orderId: string;
-  side: 'BUY' | 'SELL';
-  amount: bigint;
-  timestamp: number;
-}
-
 class Matcher {
-  private askOrderList: LimitOrder[] = [];
-  private bidOrderList: LimitOrder[] = [];
+  private askOrderList: Order[] = [];
+  private bidOrderList: Order[] = [];
 
-  public Limit(limitOrder: LimitOrder) {
-    const order: LimitOrder = { ...limitOrder, timestamp: Date.now() };
+  public Limit(limitOrder: Order) {
+    const order: Order = { ...limitOrder, timestamp: Date.now() };
     if (order.side === 'BUY') {
       this.bidLimitOrder(order);
     } else if (order.side === 'SELL') {
@@ -27,19 +20,19 @@ class Matcher {
     }
   }
 
-  private bidLimitOrder(bidOrder: LimitOrder) {
+  private bidLimitOrder(bidOrder: Order) {
     let index = 0;
     for (; index < this.bidOrderList.length && bidOrder.price <= this.bidOrderList[index].price; ++index);
     this.bidOrderList.splice(index, 0, bidOrder);
   }
 
-  private askLimitOrder(askOrder: LimitOrder) {
+  private askLimitOrder(askOrder: Order) {
     let index = 0;
     for (; index < this.askOrderList.length && askOrder.price >= this.askOrderList[index].price; ++index);
     this.askOrderList.splice(index, 0, askOrder);
   }
 
-  public Market(marketOrder: MarketOrder) {
+  public Market(marketOrder: Order) {
 
   }
 }

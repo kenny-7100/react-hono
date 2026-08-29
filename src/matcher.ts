@@ -36,7 +36,7 @@ class Matcher {
     } else if (marketOrder.action === 'SELL') {
       return this.marketSell(marketOrder);
     } else {
-      return [];
+      return { amount: 0n, filledOrders: [] };
     }
   }
 
@@ -54,7 +54,7 @@ class Matcher {
         buyAmount = 0n;
       }
     }
-    return filledOrders;
+    return { amount: buyOrder.amount - buyAmount, filledOrders };
   }
 
   private marketSell(sellOrder: Order) {
@@ -71,7 +71,7 @@ class Matcher {
         sellAmount = 0n;
       }
     }
-    return filledOrders;
+    return { amount: sellOrder.amount - sellAmount, filledOrders };
   }
 }
 

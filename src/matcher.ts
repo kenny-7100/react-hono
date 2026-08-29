@@ -12,19 +12,19 @@ class Matcher {
 
   public Limit(limitOrder: Order) {
     if (limitOrder.action === 'BID') {
-      this.bidLimitOrder(limitOrder);
+      this.limitBid(limitOrder);
     } else if (limitOrder.action === 'ASK') {
-      this.askLimitOrder(limitOrder);
+      this.limitAsk(limitOrder);
     }
   }
 
-  private bidLimitOrder(bidOrder: Order) {
+  private limitBid(bidOrder: Order) {
     let index = 0;
     for (; index < this.bidOrderList.length && bidOrder.price <= this.bidOrderList[index].price; ++index);
     this.bidOrderList.splice(index, 0, bidOrder);
   }
 
-  private askLimitOrder(askOrder: Order) {
+  private limitAsk(askOrder: Order) {
     let index = 0;
     for (; index < this.askOrderList.length && askOrder.price >= this.askOrderList[index].price; ++index);
     this.askOrderList.splice(index, 0, askOrder);

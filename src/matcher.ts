@@ -42,20 +42,30 @@ class Matcher {
 
   private buyMarketOrder(buyOrder: Order) {
     let buyAmount = buyOrder.amount;
-    while (this.askOrderList.length > 0 && buyAmount > 0) {
+    while (this.askOrderList.length > 0 && buyAmount > 0n) {
       const ask1Order = this.askOrderList[0];
       if (ask1Order.amount <= buyAmount) {
         buyAmount -= ask1Order.amount;
         this.askOrderList.shift();
       } else {
-        buyAmount = 0n;
         ask1Order.amount -= buyAmount;
+        buyAmount = 0n;
       }
     }
   }
 
   private sellMarketOrder(sellOrder: Order) {
-
+    let sellAmount = sellOrder.amount;
+    while (this.bidOrderList.length > 0 && sellAmount > 0n) {
+      const bid1Order = this.bidOrderList[0];
+      if (bid1Order.amount <= sellAmount) {
+        sellAmount -= bid1Order.amount;
+        this.bidOrderList.shift();
+      } else {
+        bid1Order.amount -= sellAmount;
+        sellAmount = 0n;
+      }
+    }
   }
 }
 

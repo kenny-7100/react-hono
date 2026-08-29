@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 
+export { MatcherDurableObject } from './DO/matcher';
+
 export class CounterDurableObject {
   constructor(private readonly state: DurableObjectState) {}
 

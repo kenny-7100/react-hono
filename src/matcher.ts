@@ -21,6 +21,8 @@ class Matcher {
   private bidOrderList: Order[] = [];
 
   public Limit(limitOrder: Order) {
+    this.validatePrice(limitOrder);
+    this.validateAmount(limitOrder);
     if (limitOrder.action === 'BID') {
       return this.limitBid(limitOrder);
     } else if (limitOrder.action === 'ASK') {
@@ -79,12 +81,25 @@ class Matcher {
   }
 
   public Market(marketOrder: Order) {
+    this.validateAmount(marketOrder);
     if (marketOrder.action === 'BUY') {
       return this.marketBuy(marketOrder);
     } else if (marketOrder.action === 'SELL') {
       return this.marketSell(marketOrder);
     } else {
       return { amount: 0n, filledOrders: [] };
+    }
+  }
+
+  private validateAmount(order: Order) {
+    if (order.amount <= 0n) {
+      throw new RangeError('Order amount must be greater than zero');
+    }
+  }
+
+  private validatePrice(order: Order) {
+    if (order.price <= 0n) {
+      throw new RangeError('Limit order price must be greater than zero');
     }
   }
 

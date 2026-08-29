@@ -12,22 +12,60 @@ class Matcher {
 
   public Limit(limitOrder: Order) {
     if (limitOrder.action === 'BID') {
-      this.limitBid(limitOrder);
+      return this.limitBid(limitOrder);
     } else if (limitOrder.action === 'ASK') {
-      this.limitAsk(limitOrder);
+      return this.limitAsk(limitOrder);
+    } else {
+      return { };
     }
   }
 
   private limitBid(bidOrder: Order) {
+    const order = { ...bidOrder };
+    const filledOrders: Order[] = [];
+    while (this.askOrderList.length > 0 && order.amount > 0n && order.price >= this.askOrderList[0].price) {
+      const ask1Order = this.askOrderList[0];
+      if (ask1Order.amount <= order.amount) {
+        order.amount -= ask1Order.amount;
+        filledOrders.push({ ...this.askOrderList.shift()!, action: 'FILLED' });
+      } else {
+        ask1Order.amount -= order.amount;
+        filledOrders.push({ ...ask1Order, amount: order.amount, action: 'PARTIALLY_FILLED' });
+        order.amount = 0n;
+      }
+    }
+    const dealt = { amount: bidOrder.amount - order.amount, filledOrders };
+    if (dealt.amount === bidOrder.amount) {
+      return { dealt };
+    }
     let index = 0;
-    for (; index < this.bidOrderList.length && bidOrder.price <= this.bidOrderList[index].price; ++index);
-    this.bidOrderList.splice(index, 0, bidOrder);
+    for (; index < this.bidOrderList.length && order.price <= this.bidOrderList[index].price; ++index);
+    this.bidOrderList.splice(index, 0, order);
+    return dealt.amount === 0n ? { order } : { order, dealt };
   }
 
   private limitAsk(askOrder: Order) {
+    const order = { ...askOrder };
+    const filledOrders: Order[] = [];
+    while (this.bidOrderList.length > 0 && order.amount > 0n && order.price <= this.bidOrderList[0].price) {
+      const bid1Order = this.bidOrderList[0];
+      if (bid1Order.amount <= order.amount) {
+        order.amount -= bid1Order.amount;
+        filledOrders.push({ ...this.bidOrderList.shift()!, action: 'FILLED' });
+      } else {
+        bid1Order.amount -= order.amount;
+        filledOrders.push({ ...bid1Order, amount: order.amount, action: 'PARTIALLY_FILLED' });
+        order.amount = 0n;
+      }
+    }
+    const dealt = { amount: askOrder.amount - order.amount, filledOrders };
+    if (dealt.amount === askOrder.amount) {
+      return { dealt };
+    }
     let index = 0;
-    for (; index < this.askOrderList.length && askOrder.price >= this.askOrderList[index].price; ++index);
-    this.askOrderList.splice(index, 0, askOrder);
+    for (; index < this.askOrderList.length && order.price >= this.askOrderList[index].price; ++index);
+    this.askOrderList.splice(index, 0, order);
+    return dealt.amount === 0n ? { order } : { order, dealt };
   }
 
   public Market(marketOrder: Order) {

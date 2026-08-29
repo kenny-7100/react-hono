@@ -1,28 +1,28 @@
-import { useState } from 'react'
-import reactLogo from '../../assets/react.svg'
-import viteLogo from '../../assets/vite.svg'
-import heroImg from '../../assets/hero.png'
-import styles from './index.module.scss'
+import { useState } from 'react';
+import reactLogo from '../../assets/react.svg';
+import viteLogo from '../../assets/vite.svg';
+import heroImg from '../../assets/hero.png';
+import styles from './index.module.scss';
 
 function Home() {
-  const [count, setCount] = useState(0)
-  const [apiMessage, setApiMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [count, setCount] = useState(0);
+  const [apiMessage, setApiMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   async function callHelloApi() {
-    setIsLoading(true)
-    setApiMessage('')
+    setIsLoading(true);
+    setApiMessage('');
 
     try {
-      const response = await fetch('/api/hello')
-      if (!response.ok) throw new Error(`Request failed with status ${response.status}`)
+      const response = await fetch('/api/hello');
+      if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
 
-      const data = (await response.json()) as { message: string }
-      setApiMessage(data.message)
+      const data = (await response.json()) as { message: string };
+      setApiMessage(data.message);
     } catch (error) {
-      setApiMessage(error instanceof Error ? error.message : 'Request failed')
+      setApiMessage(error instanceof Error ? error.message : 'Request failed');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -75,7 +75,7 @@ function Home() {
       <div className={styles.ticks}></div>
       <section className={styles.spacer}></section>
     </>
-  )
+  );
 }
 
-export { Home as Component }
+export { Home as Component };

@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import styles from './index.module.scss'
+import { Link } from 'react-router-dom';
+import styles from './index.module.scss';
 
 function NotFound() {
   return (
@@ -9,7 +9,7 @@ function NotFound() {
       <p>The page you requested does not exist.</p>
       <Link className={styles.pageLink} to="/">Return home</Link>
     </main>
-  )
+  );
 }
 
-export { NotFound as Component }
+export { NotFound as Component };

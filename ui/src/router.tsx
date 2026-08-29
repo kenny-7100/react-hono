@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
   {
@@ -17,4 +17,4 @@ export const router = createBrowserRouter([
     path: '*',
     lazy: () => import('./pages/NotFound'),
   },
-])
+]);

@@ -1,9 +1,9 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono';
 
-const app = new Hono()
+const app = new Hono();
 
 app.get('/api/hello', (c) => {
-  return c.json({ message: 'Hello Hono!' })
-})
+  return c.json({ message: 'Hello Hono!' });
+});
 
-export default app
+export default app;

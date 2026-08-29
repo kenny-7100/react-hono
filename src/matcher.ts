@@ -48,8 +48,8 @@ class Matcher {
         buyAmount -= ask1Order.amount;
         this.askOrderList.shift();
       } else {
-        ask1Order.amount -= buyAmount;
         buyAmount = 0n;
+        ask1Order.amount -= buyAmount;
       }
     }
   }

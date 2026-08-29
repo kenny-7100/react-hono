@@ -1,15 +1,4 @@
-.page {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  min-height: 420px;
-  padding: 48px 20px;
-
-  h1 { margin: 16px 0; }
-  > p:not(.eyebrow) { max-width: 620px; }
+.page,
+.eyebrow {
+  font-size: 12px;
 }
-
-.eyebrow { color: var(--accent); font-weight: 600; }

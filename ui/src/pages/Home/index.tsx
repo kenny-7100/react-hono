@@ -27,7 +27,7 @@ function Home() {
       <button type="button" onClick={callHelloApi} disabled={isLoading}>
         {isLoading ? 'Calling API...' : 'Call API'}
       </button>
-      <output className={styles.apiResult} aria-live="polite">{apiMessage}</output>
+      <output aria-live="polite">{apiMessage}</output>
     </main>
   );
 }

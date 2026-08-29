@@ -56,17 +56,20 @@ class Matcher {
   }
 
   private sellMarketOrder(sellOrder: Order) {
+    const filledOrders: Order[] = [];
     let sellAmount = sellOrder.amount;
     while (this.bidOrderList.length > 0 && sellAmount > 0n) {
       const bid1Order = this.bidOrderList[0];
       if (bid1Order.amount <= sellAmount) {
         sellAmount -= bid1Order.amount;
-        this.bidOrderList.shift();
+        filledOrders.push(this.bidOrderList.shift()!);
       } else {
         bid1Order.amount -= sellAmount;
+        filledOrders.push({ ...bid1Order, amount: sellAmount });
         sellAmount = 0n;
       }
     }
+    return filledOrders;
   }
 }
 

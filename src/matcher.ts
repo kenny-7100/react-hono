@@ -20,14 +20,16 @@ class Matcher {
     }
   }
 
-  private buyLimitOrder(buyOrder: LimitOrder) {
-    const index = this.bidOrderList.findIndex((order) => buyOrder.price > order.price);
-    this.bidOrderList.splice(index, 0, buyOrder);
+  private buyLimitOrder(bidOrder: LimitOrder) {
+    let index = 0;
+    for (; index < this.bidOrderList.length && bidOrder.price <= this.bidOrderList[index].price; ++index);
+    this.bidOrderList.splice(index, 0, bidOrder);
   }
 
-  private sellLimitOrder(sellOrder: LimitOrder) {
-    const index = this.askOrderList.findIndex((order) => sellOrder.price < order.price);
-    this.bidOrderList.splice(index, 0, sellOrder);
+  private sellLimitOrder(askOrder: LimitOrder) {
+    let index = 0;
+    for (; index < this.askOrderList.length && askOrder.price >= this.askOrderList[index].price; ++index);
+    this.askOrderList.splice(index, 0, askOrder);
   }
 }
 

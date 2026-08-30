@@ -141,17 +141,21 @@ export class MatcherDurableObject {
       }
 
       const order: LimitOrder = {
+        sequence: 0n,
         orderId,
         side: LimitSide.BID,
         price,
         amount: remainingAmount,
       };
-      this.state.storage.sql.exec(
-        'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 0, ?, ?)',
-        order.orderId,
-        order.price,
-        order.amount,
-      );
+      const inserted = this.state.storage.sql
+        .exec<{ sequence: string }>(
+          'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 0, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
+          order.orderId,
+          order.price,
+          order.amount,
+        )
+        .one();
+      order.sequence = BigInt(inserted.sequence);
 
       return dealt.dealtAmount === 0n ? { order } : { order, dealt };
     });
@@ -172,17 +176,21 @@ export class MatcherDurableObject {
       }
 
       const order: LimitOrder = {
+        sequence: 0n,
         orderId,
         side: LimitSide.ASK,
         price,
         amount: remainingAmount,
       };
-      this.state.storage.sql.exec(
-        'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 1, ?, ?)',
-        order.orderId,
-        order.price,
-        order.amount,
-      );
+      const inserted = this.state.storage.sql
+        .exec<{ sequence: string }>(
+          'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 1, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
+          order.orderId,
+          order.price,
+          order.amount,
+        )
+        .one();
+      order.sequence = BigInt(inserted.sequence);
 
       return dealt.dealtAmount === 0n ? { order } : { order, dealt };
     });

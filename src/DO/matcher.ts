@@ -139,17 +139,91 @@ export class MatcherDurableObject {
     });
   }
 
-  private limitAsk(orderId: string, price: bigint, amount: bigint): void {
+  private limitAsk(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');
     this.validateOrderInteger(amount, 'amount');
-    this.state.storage.transactionSync(() => {
+
+    return this.state.storage.transactionSync(() => {
+      let remainingAmount = amount;
+      const filledOrders: FilledOrder[] = [];
+
+      while (remainingAmount > 0n) {
+        const bids = this.state.storage.sql
+          .exec<{
+            sequence: number;
+            order_id: string;
+            side: number;
+            price: string;
+            amount: string;
+          }>(
+            `SELECT sequence, order_id, side,
+                    CAST(price AS TEXT) AS price,
+                    CAST(amount AS TEXT) AS amount
+             FROM orders
+             WHERE side = 0 AND price >= ?
+             ORDER BY price DESC, sequence ASC
+             LIMIT 1`,
+            price,
+          )
+          .toArray();
+        const bid = bids[0];
+        if (!bid) {
+          break;
+        }
+
+        const bidAmount = BigInt(bid.amount);
+        if (bidAmount <= remainingAmount) {
+          remainingAmount -= bidAmount;
+          filledOrders.push({
+            orderId: bid.order_id,
+            side: OrderSide.BID,
+            status: DealStatus.FILLED,
+            price: BigInt(bid.price),
+            amount: bidAmount,
+            dealtAmount: bidAmount,
+          });
+          this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', bid.sequence);
+        } else {
+          filledOrders.push({
+            orderId: bid.order_id,
+            side: OrderSide.BID,
+            status: DealStatus.PARTIALLY_FILLED,
+            price: BigInt(bid.price),
+            amount: bidAmount,
+            dealtAmount: remainingAmount,
+          });
+          this.state.storage.sql.exec(
+            'UPDATE orders SET amount = ? WHERE sequence = ?',
+            bidAmount - remainingAmount,
+            bid.sequence,
+          );
+          remainingAmount = 0n;
+        }
+      }
+
+      const dealt = {
+        dealtAmount: amount - remainingAmount,
+        filledOrders,
+      };
+      if (remainingAmount === 0n) {
+        return { dealt };
+      }
+
+      const order: LimitOrder = {
+        orderId,
+        side: OrderSide.ASK,
+        price,
+        amount: remainingAmount,
+      };
       this.state.storage.sql.exec(
         'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 1, ?, ?)',
-        orderId,
-        price,
-        amount,
+        order.orderId,
+        order.price,
+        order.amount,
       );
+
+      return dealt.dealtAmount === 0n ? { order } : { order, dealt };
     });
   }
 

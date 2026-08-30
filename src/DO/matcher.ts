@@ -46,6 +46,18 @@ export class MatcherDurableObject {
   }
 
   private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
+    const baseSQL =
+      `SELECT
+        CAST(sequence AS TEXT) AS sequence,
+        orderId,
+        side,
+        CAST(price AS TEXT) AS price,
+        CAST(amount AS TEXT) AS amount
+      FROM
+        orders
+      WHERE
+        side = ?`;
+    const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;
     return this.state.storage.sql
       .exec<{
         sequence: string;
@@ -53,26 +65,10 @@ export class MatcherDurableObject {
         side: number;
         price: string;
         amount: string;
-      }>(`
-        SELECT
-          CAST(sequence AS TEXT) AS sequence,
-          orderId,
-          side,
-          CAST(price AS TEXT) AS price,
-          CAST(amount AS TEXT) AS amount
-        FROM
-          orders
-        WHERE
-          side = ? AND price <= ?
-        ORDER BY
-          price ?, sequence ASC
+      }>(`${baseSQL} AND price <= ? ${orderBySQL}
         LIMIT 1`,
         side,
         price,
-        {
-          [LimitSide.BID]: 'DESC',
-          [LimitSide.ASK]: 'ASC',
-        }[side],
       )
       .toArray().map((order) => ({
         sequence: BigInt(order.sequence),

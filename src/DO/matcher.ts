@@ -44,13 +44,6 @@ export class MatcherDurableObject {
     });
   }
 
-  async fetch(): Promise<Response> {
-    return Response.json(
-      { error: 'Market matcher endpoint is not implemented yet' },
-      { status: 501 },
-    );
-  }
-
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');

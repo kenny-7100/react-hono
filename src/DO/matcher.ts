@@ -45,7 +45,9 @@ export class MatcherDurableObject {
     });
   }
 
-  private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
+  private queryLimitOrder(side: LimitSide, limit?: bigint, price?: bigint): LimitOrder[] {
+    limit != null && this.validateOrderInteger(limit, 'limit');
+    price != null && this.validateOrderInteger(price, 'price');
     const baseSQL =
       `SELECT
         CAST(sequence AS TEXT) AS sequence,

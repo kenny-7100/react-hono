@@ -47,6 +47,10 @@ export class MatcherDurableObject {
   }
 
   private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
+    if (side !== LimitSide.BID && side !== LimitSide.ASK) {
+      throw new RangeError(`Invalid limit order side: ${side}`);
+    }
+
     limit != null && this.validateSQLitePositiveInteger(limit, 'limit');
     price != null && this.validateSQLitePositiveInteger(price, 'price');
     const baseSQL =

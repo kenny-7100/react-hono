@@ -102,25 +102,7 @@ export class MatcherDurableObject {
       const filledOrders: FilledOrder[] = [];
 
       while (remainingAmount > 0n) {
-        const asks = this.state.storage.sql
-          .exec<{
-            sequence: number;
-            orderId: string;
-            side: number;
-            price: string;
-            amount: string;
-          }>(
-            `SELECT sequence, orderId, side,
-                    CAST(price AS TEXT) AS price,
-                    CAST(amount AS TEXT) AS amount
-             FROM orders
-             WHERE side = 1 AND price <= ?
-             ORDER BY price ASC, sequence ASC
-             LIMIT 1`,
-            price,
-          )
-          .toArray();
-        const ask = asks[0];
+        const ask = this.queryLimitOrder(LimitSide.ASK, 1, price)[0];
         if (!ask) {
           break;
         }
@@ -136,7 +118,10 @@ export class MatcherDurableObject {
             amount: askAmount,
             dealtAmount: askAmount,
           });
-          this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', ask.sequence);
+          this.state.storage.sql.exec(
+            'DELETE FROM orders WHERE sequence = ?',
+            this.bigint2SQLiteInteger(ask.sequence),
+          );
         } else {
           filledOrders.push({
             orderId: ask.orderId,
@@ -149,7 +134,7 @@ export class MatcherDurableObject {
           this.state.storage.sql.exec(
             'UPDATE orders SET amount = ? WHERE sequence = ?',
             askAmount - remainingAmount,
-            ask.sequence,
+            this.bigint2SQLiteInteger(ask.sequence),
           );
           remainingAmount = 0n;
         }
@@ -192,25 +177,7 @@ export class MatcherDurableObject {
       const filledOrders: FilledOrder[] = [];
 
       while (remainingAmount > 0n) {
-        const bids = this.state.storage.sql
-          .exec<{
-            sequence: number;
-            orderId: string;
-            side: number;
-            price: string;
-            amount: string;
-          }>(
-            `SELECT sequence, orderId, side,
-                    CAST(price AS TEXT) AS price,
-                    CAST(amount AS TEXT) AS amount
-             FROM orders
-             WHERE side = 0 AND price >= ?
-             ORDER BY price DESC, sequence ASC
-             LIMIT 1`,
-            price,
-          )
-          .toArray();
-        const bid = bids[0];
+        const bid = this.queryLimitOrder(LimitSide.BID, 1, price)[0];
         if (!bid) {
           break;
         }
@@ -226,7 +193,10 @@ export class MatcherDurableObject {
             amount: bidAmount,
             dealtAmount: bidAmount,
           });
-          this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', bid.sequence);
+          this.state.storage.sql.exec(
+            'DELETE FROM orders WHERE sequence = ?',
+            this.bigint2SQLiteInteger(bid.sequence),
+          );
         } else {
           filledOrders.push({
             orderId: bid.orderId,
@@ -239,7 +209,7 @@ export class MatcherDurableObject {
           this.state.storage.sql.exec(
             'UPDATE orders SET amount = ? WHERE sequence = ?',
             bidAmount - remainingAmount,
-            bid.sequence,
+            this.bigint2SQLiteInteger(bid.sequence),
           );
           remainingAmount = 0n;
         }

@@ -48,7 +48,7 @@ export class MatcherDurableObject {
 
   private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
     if (side !== LimitSide.BID && side !== LimitSide.ASK) {
-      throw new RangeError(`Invalid limit order side: ${side}`);
+      throw new RangeError(`invalid limit order side: ${side}`);
     }
     if (limit != null && (!Number.isSafeInteger(limit) || limit <= 0)) {
       throw new RangeError('limit must be a positive safe integer');

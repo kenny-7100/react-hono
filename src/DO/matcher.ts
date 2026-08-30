@@ -58,6 +58,8 @@ export class MatcherDurableObject {
       WHERE
         side = ?`;
     const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;
+    const andPriceSQL = price != null ? `AND price <= ?` : '';
+    const limitSQL = limit != null ? `LIMIT ?` : '';
     return this.state.storage.sql
       .exec<{
         sequence: string;
@@ -65,10 +67,10 @@ export class MatcherDurableObject {
         side: number;
         price: string;
         amount: string;
-      }>(`${baseSQL} AND price <= ? ${orderBySQL}
-        LIMIT 1`,
+      }>(`${baseSQL} ${andPriceSQL} ${orderBySQL} ${limitSQL}`,
         side,
         price,
+        limit,
       )
       .toArray().map((order) => ({
         sequence: BigInt(order.sequence),

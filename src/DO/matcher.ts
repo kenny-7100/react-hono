@@ -55,8 +55,8 @@ export class MatcherDurableObject {
       FROM
         orders
       WHERE
-        side = ?`;
-    const bindings: (number | string)[] = [side === LimitSide.BID ? 0 : 1];
+        side = ${side === LimitSide.BID ? 0 : 1}`;
+    const bindings: (string | number)[] = [];
     const andPriceSQL = price != null ? `AND price ${side === LimitSide.BID ? '>=' : '<='} ?` : '';
     price != null && bindings.push(this.bigint2SQLiteInteger(price));
     const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;

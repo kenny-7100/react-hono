@@ -362,6 +362,64 @@ export class MatcherDurableObject {
     });
   }
 
+  public GetBids(price: bigint): LimitOrder[] {
+    this.validateOrderInteger(price, 'price');
+
+    return this.state.storage.transactionSync(() => {
+      return this.state.storage.sql
+        .exec<{
+          order_id: string;
+          side: number;
+          price: string;
+          amount: string;
+        }>(
+          `SELECT order_id, side,
+                  CAST(price AS TEXT) AS price,
+                  CAST(amount AS TEXT) AS amount
+           FROM orders
+           WHERE side = 0 AND price >= ?
+           ORDER BY price DESC, sequence ASC`,
+          price,
+        )
+        .toArray()
+        .map((order) => ({
+          orderId: order.order_id,
+          side: order.side as LimitSide,
+          price: BigInt(order.price),
+          amount: BigInt(order.amount),
+        }));
+    });
+  }
+
+  public GetAsks(price: bigint): LimitOrder[] {
+    this.validateOrderInteger(price, 'price');
+
+    return this.state.storage.transactionSync(() => {
+      return this.state.storage.sql
+        .exec<{
+          order_id: string;
+          side: number;
+          price: string;
+          amount: string;
+        }>(
+          `SELECT order_id, side,
+                  CAST(price AS TEXT) AS price,
+                  CAST(amount AS TEXT) AS amount
+           FROM orders
+           WHERE side = 1 AND price <= ?
+           ORDER BY price ASC, sequence ASC`,
+          price,
+        )
+        .toArray()
+        .map((order) => ({
+          orderId: order.order_id,
+          side: order.side as LimitSide,
+          price: BigInt(order.price),
+          amount: BigInt(order.amount),
+        }));
+    });
+  }
+
   public CancelOrder(orderId: string): LimitOrder {
     this.validateOrderId(orderId);
 

@@ -496,8 +496,9 @@ export class MatcherDurableObject {
     });
   }
 
-  private validateSQLitePositiveInteger(value: bigint, field: string): void {
-    if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
+  private validateSQLitePositiveInteger(value: bigint | number | string, field: string): void {
+    const bigintValue = BigInt(value);
+    if (bigintValue <= 0n || bigintValue > MatcherDurableObject.SQLITE_INTEGER_MAX) {
       throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
     }
   }

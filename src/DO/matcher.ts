@@ -60,9 +60,9 @@ export class MatcherDurableObject {
         orders
       WHERE
         side = ?`;
-    const bindings: (number | bigint)[] = [side === LimitSide.BID ? 0 : 1];
+    const bindings: (number | string)[] = [side === LimitSide.BID ? 0 : 1];
     const andPriceSQL = price != null ? `AND price ${side === LimitSide.BID ? '>=' : '<='} ?` : '';
-    price != null && bindings.push(price);
+    price != null && bindings.push(this.bigint2SQLiteInteger(price));
     const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;
     const limitSQL = limit != null ? `LIMIT ?` : '';
     limit != null && bindings.push(limit);

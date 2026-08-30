@@ -1,17 +1,7 @@
 
-enum OrderType {
-  LIMIT = 0,
-  MARKET = 1,
-}
-
 enum LimitSide {
   BID = 0,
   ASK = 1,
-}
-
-enum MarketSide {
-  BUY = 0,
-  SELL = 1,
 }
 
 enum DealStatus {
@@ -43,14 +33,6 @@ interface Dealt {
 interface LimitResult {
   dealt?: Dealt;
   order?: LimitOrder;
-}
-
-interface Order {
-  type: OrderType;
-  side: LimitSide | MarketSide;
-  orderId: string;
-  price: bigint;
-  amount: bigint;
 }
 
 export class MatcherDurableObject {

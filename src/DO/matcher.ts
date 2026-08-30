@@ -1,7 +1,7 @@
 
 enum OrderType {
-  Limit = 0,
-  Market = 1,
+  LIMIT = 0,
+  MARKET = 1,
 }
 
 enum LimitSide {
@@ -10,8 +10,8 @@ enum LimitSide {
 }
 
 enum MarketSide {
-  Buy = 0,
-  Sell = 1,
+  BUY = 0,
+  SELL = 1,
 }
 
 enum DealStatus {

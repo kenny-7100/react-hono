@@ -10,6 +10,7 @@ enum DealStatus {
 }
 
 interface LimitOrder {
+  sequence: bigint;
   orderId: string;
   side: LimitSide;
   price: bigint;
@@ -44,22 +45,42 @@ export class MatcherDurableObject {
     });
   }
 
-  private sqlBuilder() {
-    return `
-      SELECT
-        sequence,
-        orderId,
+  private queryLimitOrder(side: LimitSide, price: bigint): LimitOrder[] {
+    return this.state.storage.sql
+      .exec<{
+        sequence: string;
+        orderId: string;
+        side: number;
+        price: string;
+        amount: string;
+      }>(`
+        SELECT
+          CAST(sequence AS TEXT) AS sequence,
+          orderId,
+          side,
+          CAST(price AS TEXT) AS price,
+          CAST(amount AS TEXT) AS amount
+        FROM
+          orders
+        WHERE
+          side = ? AND price <= ?
+        ORDER BY
+          price ?, sequence ASC
+        LIMIT 1`,
         side,
-        CAST(price AS TEXT) AS price,
-        CAST(amount AS TEXT) AS amount
-      FROM
-        orders
-      WHERE
-        side = 1 AND price <= ?
-      ORDER BY
-        price ASC, sequence ASC
-      LIMIT 1
-    `.trim();
+        price,
+        {
+          [LimitSide.BID]: 'DESC',
+          [LimitSide.ASK]: 'ASC',
+        }[side],
+      )
+      .toArray().map((order) => ({
+        sequence: BigInt(order.sequence),
+        orderId: order.orderId,
+        side: order.side as LimitSide,
+        price: BigInt(order.price),
+        amount: BigInt(order.amount),
+      }));
   }
 
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {

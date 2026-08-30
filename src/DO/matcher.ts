@@ -46,7 +46,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private queryLimitOrder(side: LimitSide, limit?: bigint, price?: bigint): LimitOrder[] {
+  private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
     limit != null && this.validateSQLitePositiveInteger(limit, 'limit');
     price != null && this.validateSQLitePositiveInteger(price, 'price');
     const baseSQL =

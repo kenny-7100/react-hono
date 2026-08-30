@@ -57,8 +57,8 @@ export class MatcherDurableObject {
         orders
       WHERE
         side = ?`;
-    const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;
     const andPriceSQL = price != null ? `AND price <= ?` : '';
+    const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;
     const limitSQL = limit != null ? `LIMIT ?` : '';
     return this.state.storage.sql
       .exec<{

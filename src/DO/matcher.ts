@@ -48,7 +48,7 @@ export class MatcherDurableObject {
     return `
       SELECT
         sequence,
-        order_id,
+        orderId,
         side,
         CAST(price AS TEXT) AS price,
         CAST(amount AS TEXT) AS amount
@@ -77,12 +77,12 @@ export class MatcherDurableObject {
         const asks = this.state.storage.sql
           .exec<{
             sequence: number;
-            order_id: string;
+            orderId: string;
             side: number;
             price: string;
             amount: string;
           }>(
-            `SELECT sequence, order_id, side,
+            `SELECT sequence, orderId, side,
                     CAST(price AS TEXT) AS price,
                     CAST(amount AS TEXT) AS amount
              FROM orders
@@ -101,7 +101,7 @@ export class MatcherDurableObject {
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
           filledOrders.push({
-            orderId: ask.order_id,
+            orderId: ask.orderId,
             side: LimitSide.ASK,
             status: DealStatus.FILLED,
             price: BigInt(ask.price),
@@ -111,7 +111,7 @@ export class MatcherDurableObject {
           this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', ask.sequence);
         } else {
           filledOrders.push({
-            orderId: ask.order_id,
+            orderId: ask.orderId,
             side: LimitSide.ASK,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(ask.price),
@@ -142,7 +142,7 @@ export class MatcherDurableObject {
         amount: remainingAmount,
       };
       this.state.storage.sql.exec(
-        'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 0, ?, ?)',
+        'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 0, ?, ?)',
         order.orderId,
         order.price,
         order.amount,
@@ -167,12 +167,12 @@ export class MatcherDurableObject {
         const bids = this.state.storage.sql
           .exec<{
             sequence: number;
-            order_id: string;
+            orderId: string;
             side: number;
             price: string;
             amount: string;
           }>(
-            `SELECT sequence, order_id, side,
+            `SELECT sequence, orderId, side,
                     CAST(price AS TEXT) AS price,
                     CAST(amount AS TEXT) AS amount
              FROM orders
@@ -191,7 +191,7 @@ export class MatcherDurableObject {
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
           filledOrders.push({
-            orderId: bid.order_id,
+            orderId: bid.orderId,
             side: LimitSide.BID,
             status: DealStatus.FILLED,
             price: BigInt(bid.price),
@@ -201,7 +201,7 @@ export class MatcherDurableObject {
           this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', bid.sequence);
         } else {
           filledOrders.push({
-            orderId: bid.order_id,
+            orderId: bid.orderId,
             side: LimitSide.BID,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(bid.price),
@@ -232,7 +232,7 @@ export class MatcherDurableObject {
         amount: remainingAmount,
       };
       this.state.storage.sql.exec(
-        'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 1, ?, ?)',
+        'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 1, ?, ?)',
         order.orderId,
         order.price,
         order.amount,
@@ -255,12 +255,12 @@ export class MatcherDurableObject {
         const asks = this.state.storage.sql
           .exec<{
             sequence: number;
-            order_id: string;
+            orderId: string;
             side: number;
             price: string;
             amount: string;
           }>(
-            `SELECT sequence, order_id, side,
+            `SELECT sequence, orderId, side,
                     CAST(price AS TEXT) AS price,
                     CAST(amount AS TEXT) AS amount
              FROM orders
@@ -278,7 +278,7 @@ export class MatcherDurableObject {
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
           filledOrders.push({
-            orderId: ask.order_id,
+            orderId: ask.orderId,
             side: LimitSide.ASK,
             status: DealStatus.FILLED,
             price: BigInt(ask.price),
@@ -288,7 +288,7 @@ export class MatcherDurableObject {
           this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', ask.sequence);
         } else {
           filledOrders.push({
-            orderId: ask.order_id,
+            orderId: ask.orderId,
             side: LimitSide.ASK,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(ask.price),
@@ -324,12 +324,12 @@ export class MatcherDurableObject {
         const bids = this.state.storage.sql
           .exec<{
             sequence: number;
-            order_id: string;
+            orderId: string;
             side: number;
             price: string;
             amount: string;
           }>(
-            `SELECT sequence, order_id, side,
+            `SELECT sequence, orderId, side,
                     CAST(price AS TEXT) AS price,
                     CAST(amount AS TEXT) AS amount
              FROM orders
@@ -347,7 +347,7 @@ export class MatcherDurableObject {
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
           filledOrders.push({
-            orderId: bid.order_id,
+            orderId: bid.orderId,
             side: LimitSide.BID,
             status: DealStatus.FILLED,
             price: BigInt(bid.price),
@@ -357,7 +357,7 @@ export class MatcherDurableObject {
           this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', bid.sequence);
         } else {
           filledOrders.push({
-            orderId: bid.order_id,
+            orderId: bid.orderId,
             side: LimitSide.BID,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(bid.price),
@@ -386,12 +386,12 @@ export class MatcherDurableObject {
     return this.state.storage.transactionSync(() => {
       return this.state.storage.sql
         .exec<{
-          order_id: string;
+          orderId: string;
           side: number;
           price: string;
           amount: string;
         }>(
-          `SELECT order_id, side,
+          `SELECT orderId, side,
                   CAST(price AS TEXT) AS price,
                   CAST(amount AS TEXT) AS amount
            FROM orders
@@ -401,7 +401,7 @@ export class MatcherDurableObject {
         )
         .toArray()
         .map((order) => ({
-          orderId: order.order_id,
+          orderId: order.orderId,
           side: order.side as LimitSide,
           price: BigInt(order.price),
           amount: BigInt(order.amount),
@@ -415,12 +415,12 @@ export class MatcherDurableObject {
     return this.state.storage.transactionSync(() => {
       return this.state.storage.sql
         .exec<{
-          order_id: string;
+          orderId: string;
           side: number;
           price: string;
           amount: string;
         }>(
-          `SELECT order_id, side,
+          `SELECT orderId, side,
                   CAST(price AS TEXT) AS price,
                   CAST(amount AS TEXT) AS amount
            FROM orders
@@ -430,7 +430,7 @@ export class MatcherDurableObject {
         )
         .toArray()
         .map((order) => ({
-          orderId: order.order_id,
+          orderId: order.orderId,
           side: order.side as LimitSide,
           price: BigInt(order.price),
           amount: BigInt(order.amount),
@@ -445,16 +445,16 @@ export class MatcherDurableObject {
       const orders = this.state.storage.sql
         .exec<{
           sequence: number;
-          order_id: string;
+          orderId: string;
           side: number;
           price: string;
           amount: string;
         }>(
-          `SELECT sequence, order_id, side,
+          `SELECT sequence, orderId, side,
                   CAST(price AS TEXT) AS price,
                   CAST(amount AS TEXT) AS amount
            FROM orders
-           WHERE order_id = ?
+           WHERE orderId = ?
            LIMIT 1`,
           orderId,
         )
@@ -467,7 +467,7 @@ export class MatcherDurableObject {
       this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', order.sequence);
 
       return {
-        orderId: order.order_id,
+        orderId: order.orderId,
         side: order.side as LimitSide,
         price: BigInt(order.price),
         amount: BigInt(order.amount),
@@ -490,7 +490,7 @@ export class MatcherDurableObject {
   private registerOrderId(orderId: string): void {
     try {
       this.state.storage.sql.exec(
-        'INSERT INTO order_ids (order_id) VALUES (?)',
+        'INSERT INTO order_ids (orderId) VALUES (?)',
         orderId,
       );
     } catch {
@@ -502,12 +502,12 @@ export class MatcherDurableObject {
   private initializeSchema() {
     this.state.storage.sql.exec(`
       CREATE TABLE IF NOT EXISTS order_ids (
-        order_id TEXT PRIMARY KEY
+        orderId TEXT PRIMARY KEY
       );
 
       CREATE TABLE IF NOT EXISTS orders (
         sequence INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_id TEXT NOT NULL UNIQUE,
+        orderId TEXT NOT NULL UNIQUE,
         side INTEGER NOT NULL CHECK (side IN (0, 1)),
         price INTEGER NOT NULL CHECK (price > 0),
         amount INTEGER NOT NULL CHECK (amount > 0)

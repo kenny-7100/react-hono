@@ -57,7 +57,7 @@ export class MatcherDurableObject {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
-      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+      this.registerOrderId(orderId);
 
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
@@ -147,7 +147,7 @@ export class MatcherDurableObject {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
-      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+      this.registerOrderId(orderId);
 
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
@@ -236,7 +236,7 @@ export class MatcherDurableObject {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
-      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+      this.registerOrderId(orderId);
 
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
@@ -305,7 +305,7 @@ export class MatcherDurableObject {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
-      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+      this.registerOrderId(orderId);
 
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
@@ -415,6 +415,17 @@ export class MatcherDurableObject {
   private validateOrderId(orderId: string): void {
     if (typeof orderId !== 'string' || orderId.trim().length === 0) {
       throw new RangeError('orderId must be a non-empty string');
+    }
+  }
+
+  private registerOrderId(orderId: string): void {
+    try {
+      this.state.storage.sql.exec(
+        'INSERT INTO order_ids (order_id) VALUES (?)',
+        orderId,
+      );
+    } catch {
+      throw new Error(`Request already processed: ${orderId}`);
     }
   }
 

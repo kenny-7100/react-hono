@@ -15,28 +15,35 @@ export class MatcherDurableObject {
   }
 
   private limitBid(orderId: string, price: bigint, amount: bigint): void {
+    this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');
     this.validateOrderInteger(amount, 'amount');
-    this.state.storage.sql.exec(
-      'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 0, ?, ?)',
-      orderId,
-      price,
-      amount,
-    );
+    this.state.storage.transactionSync(() => {
+      this.state.storage.sql.exec(
+        'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 0, ?, ?)',
+        orderId,
+        price,
+        amount,
+      );
+    });
   }
 
   private limitAsk(orderId: string, price: bigint, amount: bigint): void {
+    this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');
     this.validateOrderInteger(amount, 'amount');
-    this.state.storage.sql.exec(
-      'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 1, ?, ?)',
-      orderId,
-      price,
-      amount,
-    );
+    this.state.storage.transactionSync(() => {
+      this.state.storage.sql.exec(
+        'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 1, ?, ?)',
+        orderId,
+        price,
+        amount,
+      );
+    });
   }
 
   private marketBuy(orderId: string, amount: bigint): void {
+    this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
     this.state.storage.transactionSync(() => {
@@ -83,6 +90,12 @@ export class MatcherDurableObject {
   private validateOrderInteger(value: bigint, field: string): void {
     if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
       throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
+    }
+  }
+
+  private validateOrderId(orderId: string): void {
+    if (typeof orderId !== 'string' || orderId.trim().length === 0) {
+      throw new RangeError('orderId must be a non-empty string');
     }
   }
 

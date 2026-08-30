@@ -45,6 +45,14 @@ interface LimitResult {
   order?: LimitOrder;
 }
 
+interface Order {
+  type: OrderType;
+  side: LimitSide | MarketSide;
+  orderId: string;
+  price: bigint;
+  amount: bigint;
+}
+
 export class MatcherDurableObject {
   private static readonly SQLITE_INTEGER_MAX = 2n ** 63n - 1n;
 

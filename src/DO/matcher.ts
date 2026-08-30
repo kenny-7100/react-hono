@@ -1,7 +1,17 @@
 
-enum OrderSide {
+enum OrderType {
+  Limit = 0,
+  Market = 1,
+}
+
+enum LimitSide {
   BID = 0,
   ASK = 1,
+}
+
+enum MarketSide {
+  Buy = 0,
+  Sell = 1,
 }
 
 enum DealStatus {
@@ -11,14 +21,14 @@ enum DealStatus {
 
 interface LimitOrder {
   orderId: string;
-  side: OrderSide;
+  side: LimitSide;
   price: bigint;
   amount: bigint;
 }
 
 interface FilledOrder {
   orderId: string;
-  side: OrderSide;
+  side: LimitSide;
   status: DealStatus;
   price: bigint;
   amount: bigint;
@@ -91,7 +101,7 @@ export class MatcherDurableObject {
           remainingAmount -= askAmount;
           filledOrders.push({
             orderId: ask.order_id,
-            side: OrderSide.ASK,
+            side: LimitSide.ASK,
             status: DealStatus.FILLED,
             price: BigInt(ask.price),
             amount: askAmount,
@@ -101,7 +111,7 @@ export class MatcherDurableObject {
         } else {
           filledOrders.push({
             orderId: ask.order_id,
-            side: OrderSide.ASK,
+            side: LimitSide.ASK,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(ask.price),
             amount: askAmount,
@@ -126,7 +136,7 @@ export class MatcherDurableObject {
 
       const order: LimitOrder = {
         orderId,
-        side: OrderSide.BID,
+        side: LimitSide.BID,
         price,
         amount: remainingAmount,
       };
@@ -181,7 +191,7 @@ export class MatcherDurableObject {
           remainingAmount -= bidAmount;
           filledOrders.push({
             orderId: bid.order_id,
-            side: OrderSide.BID,
+            side: LimitSide.BID,
             status: DealStatus.FILLED,
             price: BigInt(bid.price),
             amount: bidAmount,
@@ -191,7 +201,7 @@ export class MatcherDurableObject {
         } else {
           filledOrders.push({
             orderId: bid.order_id,
-            side: OrderSide.BID,
+            side: LimitSide.BID,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(bid.price),
             amount: bidAmount,
@@ -216,7 +226,7 @@ export class MatcherDurableObject {
 
       const order: LimitOrder = {
         orderId,
-        side: OrderSide.ASK,
+        side: LimitSide.ASK,
         price,
         amount: remainingAmount,
       };
@@ -268,7 +278,7 @@ export class MatcherDurableObject {
           remainingAmount -= askAmount;
           filledOrders.push({
             orderId: ask.order_id,
-            side: OrderSide.ASK,
+            side: LimitSide.ASK,
             status: DealStatus.FILLED,
             price: BigInt(ask.price),
             amount: askAmount,
@@ -278,7 +288,7 @@ export class MatcherDurableObject {
         } else {
           filledOrders.push({
             orderId: ask.order_id,
-            side: OrderSide.ASK,
+            side: LimitSide.ASK,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(ask.price),
             amount: askAmount,
@@ -337,7 +347,7 @@ export class MatcherDurableObject {
           remainingAmount -= bidAmount;
           filledOrders.push({
             orderId: bid.order_id,
-            side: OrderSide.BID,
+            side: LimitSide.BID,
             status: DealStatus.FILLED,
             price: BigInt(bid.price),
             amount: bidAmount,
@@ -347,7 +357,7 @@ export class MatcherDurableObject {
         } else {
           filledOrders.push({
             orderId: bid.order_id,
-            side: OrderSide.BID,
+            side: LimitSide.BID,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(bid.price),
             amount: bidAmount,
@@ -399,7 +409,7 @@ export class MatcherDurableObject {
 
       return {
         orderId: order.order_id,
-        side: order.side as OrderSide,
+        side: order.side as LimitSide,
         price: BigInt(order.price),
         amount: BigInt(order.amount),
       };

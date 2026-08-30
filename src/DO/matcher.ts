@@ -234,13 +234,13 @@ export class MatcherDurableObject {
     return this.state.storage.transactionSync(() => {
       const orders = this.state.storage.sql
         .exec<{
-          sequence: number;
+          sequence: string;
           orderId: string;
           side: number;
           price: string;
           amount: string;
         }>(
-          `SELECT sequence, orderId, side,
+          `SELECT CAST(sequence AS TEXT) AS sequence, orderId, side,
                   CAST(price AS TEXT) AS price,
                   CAST(amount AS TEXT) AS amount
            FROM orders
@@ -254,9 +254,14 @@ export class MatcherDurableObject {
         throw new Error(`Order not found: ${orderId}`);
       }
 
-      this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', order.sequence);
+      const sequence = BigInt(order.sequence);
+      this.state.storage.sql.exec(
+        'DELETE FROM orders WHERE sequence = ?',
+        this.bigint2SQLiteInteger(sequence),
+      );
 
       return {
+        sequence,
         orderId: order.orderId,
         side: order.side as LimitSide,
         price: BigInt(order.price),

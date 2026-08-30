@@ -45,7 +45,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private queryLimitOrder(side: LimitSide, price: bigint): LimitOrder[] {
+  private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
     return this.state.storage.sql
       .exec<{
         sequence: string;

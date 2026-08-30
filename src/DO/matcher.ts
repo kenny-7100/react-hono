@@ -87,6 +87,51 @@ export class MatcherDurableObject {
     });
   }
 
+  private marketSell(orderId: string, amount: bigint): void {
+    this.validateOrderId(orderId);
+    this.validateOrderInteger(amount, 'amount');
+
+    this.state.storage.transactionSync(() => {
+      let remainingAmount = amount;
+      while (remainingAmount > 0n) {
+        const bids = this.state.storage.sql
+          .exec<{
+            sequence: number;
+            order_id: string;
+            side: number;
+            price: string;
+            amount: string;
+          }>(
+            `SELECT sequence, order_id, side,
+                    CAST(price AS TEXT) AS price,
+                    CAST(amount AS TEXT) AS amount
+             FROM orders
+             WHERE side = 0
+             ORDER BY price DESC, sequence ASC
+             LIMIT 1`,
+          )
+          .toArray();
+        const bid = bids[0];
+        if (!bid) {
+          return;
+        }
+
+        const bidAmount = BigInt(bid.amount);
+        if (bidAmount <= remainingAmount) {
+          remainingAmount -= bidAmount;
+          this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', bid.sequence);
+        } else {
+          this.state.storage.sql.exec(
+            'UPDATE orders SET amount = ? WHERE sequence = ?',
+            bidAmount - remainingAmount,
+            bid.sequence,
+          );
+          return;
+        }
+      }
+    });
+  }
+
   private validateOrderInteger(value: bigint, field: string): void {
     if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
       throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);

@@ -80,8 +80,50 @@ export class MatcherDurableObject {
       }));
   }
 
-  private matchOrder(side: LimitSide, amount: bigint, price?: bigint) {
+  private matchOrder(makerSide: LimitSide, amount: bigint, price?: bigint): Dealt {
+    if (makerSide !== LimitSide.BID && makerSide !== LimitSide.ASK) {
+      throw new RangeError(`invalid limit order side: ${makerSide}`);
+    }
+    this.validateSQLitePositiveInteger(amount, 'amount');
+    price != null && this.validateSQLitePositiveInteger(price, 'price');
 
+    let remainingAmount = amount;
+    const filledOrders: FilledOrder[] = [];
+
+    while (remainingAmount > 0n) {
+      const top = this.queryLimitOrder(makerSide, 1, price)[0];
+      if (!top) {
+        break;
+      }
+
+      if (top.amount <= remainingAmount) {
+        remainingAmount -= top.amount;
+        filledOrders.push({
+          ...top,
+          dealtAmount: top.amount,
+        });
+        this.state.storage.sql.exec(
+          'DELETE FROM orders WHERE sequence = ?',
+          this.bigint2SQLiteInteger(top.sequence),
+        );
+      } else {
+        filledOrders.push({
+          ...top,
+          dealtAmount: remainingAmount,
+        });
+        this.state.storage.sql.exec(
+          'UPDATE orders SET amount = ? WHERE sequence = ?',
+          this.bigint2SQLiteInteger(top.amount - remainingAmount),
+          this.bigint2SQLiteInteger(top.sequence),
+        );
+        remainingAmount = 0n;
+      }
+    }
+
+    return {
+      dealtAmount: amount - remainingAmount,
+      filledOrders,
+    };
   }
 
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {

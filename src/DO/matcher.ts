@@ -359,6 +359,43 @@ export class MatcherDurableObject {
     });
   }
 
+  private cancelOrder(orderId: string): LimitOrder {
+    this.validateOrderId(orderId);
+
+    return this.state.storage.transactionSync(() => {
+      const orders = this.state.storage.sql
+        .exec<{
+          sequence: number;
+          order_id: string;
+          side: number;
+          price: string;
+          amount: string;
+        }>(
+          `SELECT sequence, order_id, side,
+                  CAST(price AS TEXT) AS price,
+                  CAST(amount AS TEXT) AS amount
+           FROM orders
+           WHERE order_id = ?
+           LIMIT 1`,
+          orderId,
+        )
+        .toArray();
+      const order = orders[0];
+      if (!order) {
+        throw new Error(`Order not found: ${orderId}`);
+      }
+
+      this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', order.sequence);
+
+      return {
+        orderId: order.order_id,
+        side: order.side as OrderSide,
+        price: BigInt(order.price),
+        amount: BigInt(order.amount),
+      };
+    });
+  }
+
   private validateOrderInteger(value: bigint, field: string): void {
     if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
       throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);

@@ -1,5 +1,4 @@
 export class MatcherDurableObject {
-  private static readonly SQLITE_INTEGER_MIN = -(2n ** 63n);
   private static readonly SQLITE_INTEGER_MAX = 2n ** 63n - 1n;
 
   constructor(private readonly state: DurableObjectState) {
@@ -16,8 +15,8 @@ export class MatcherDurableObject {
   }
 
   private limitBid(orderId: string, price: bigint, amount: bigint): void {
-    this.validateSqliteInteger(price, 'price');
-    this.validateSqliteInteger(amount, 'amount');
+    this.validateOrderInteger(price, 'price');
+    this.validateOrderInteger(amount, 'amount');
     this.state.storage.sql.exec(
       'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 0, ?, ?)',
       orderId,
@@ -27,8 +26,8 @@ export class MatcherDurableObject {
   }
 
   private limitAsk(orderId: string, price: bigint, amount: bigint): void {
-    this.validateSqliteInteger(price, 'price');
-    this.validateSqliteInteger(amount, 'amount');
+    this.validateOrderInteger(price, 'price');
+    this.validateOrderInteger(amount, 'amount');
     this.state.storage.sql.exec(
       'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 1, ?, ?)',
       orderId,
@@ -37,9 +36,9 @@ export class MatcherDurableObject {
     );
   }
 
-  private validateSqliteInteger(value: bigint, field: string): void {
-    if (value < MatcherDurableObject.SQLITE_INTEGER_MIN || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
-      throw new RangeError(`${field} must fit within SQLite INTEGER range`);
+  private validateOrderInteger(value: bigint, field: string): void {
+    if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
+      throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
     }
   }
 

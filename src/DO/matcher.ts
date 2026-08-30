@@ -266,44 +266,7 @@ export class MatcherDurableObject {
 
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
-
-      let remainingAmount = amount;
-      const filledOrders: FilledOrder[] = [];
-      while (remainingAmount > 0n) {
-        const ask = this.queryLimitOrder(LimitSide.ASK, 1)[0];
-        if (!ask) {
-          break;
-        }
-
-        const askAmount = ask.amount;
-        if (askAmount <= remainingAmount) {
-          remainingAmount -= askAmount;
-          filledOrders.push({
-            ...ask,
-            dealtAmount: askAmount,
-          });
-          this.state.storage.sql.exec(
-            'DELETE FROM orders WHERE sequence = ?',
-            this.bigint2SQLiteInteger(ask.sequence),
-          );
-        } else {
-          filledOrders.push({
-            ...ask,
-            dealtAmount: remainingAmount,
-          });
-          this.state.storage.sql.exec(
-            'UPDATE orders SET amount = ? WHERE sequence = ?',
-            askAmount - remainingAmount,
-            this.bigint2SQLiteInteger(ask.sequence),
-          );
-          remainingAmount = 0n;
-        }
-      }
-
-      return {
-        dealtAmount: amount - remainingAmount,
-        filledOrders,
-      };
+      return this.matchOrder(LimitSide.ASK, amount);
     });
   }
 
@@ -313,44 +276,7 @@ export class MatcherDurableObject {
 
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
-
-      let remainingAmount = amount;
-      const filledOrders: FilledOrder[] = [];
-      while (remainingAmount > 0n) {
-        const bid = this.queryLimitOrder(LimitSide.BID, 1)[0];
-        if (!bid) {
-          break;
-        }
-
-        const bidAmount = bid.amount;
-        if (bidAmount <= remainingAmount) {
-          remainingAmount -= bidAmount;
-          filledOrders.push({
-            ...bid,
-            dealtAmount: bidAmount,
-          });
-          this.state.storage.sql.exec(
-            'DELETE FROM orders WHERE sequence = ?',
-            this.bigint2SQLiteInteger(bid.sequence),
-          );
-        } else {
-          filledOrders.push({
-            ...bid,
-            dealtAmount: remainingAmount,
-          });
-          this.state.storage.sql.exec(
-            'UPDATE orders SET amount = ? WHERE sequence = ?',
-            bidAmount - remainingAmount,
-            this.bigint2SQLiteInteger(bid.sequence),
-          );
-          remainingAmount = 0n;
-        }
-      }
-
-      return {
-        dealtAmount: amount - remainingAmount,
-        filledOrders,
-      };
+      return this.matchOrder(LimitSide.BID, amount);
     });
   }
 

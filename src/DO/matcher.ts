@@ -51,7 +51,7 @@ export class MatcherDurableObject {
     );
   }
 
-  private limitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
+  public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');
     this.validateOrderInteger(amount, 'amount');
@@ -141,7 +141,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private limitAsk(orderId: string, price: bigint, amount: bigint): LimitResult {
+  public LimitAsk(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');
     this.validateOrderInteger(amount, 'amount');
@@ -231,7 +231,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketBuy(orderId: string, amount: bigint): Dealt {
+  public MarketBuy(orderId: string, amount: bigint): Dealt {
     this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
@@ -300,7 +300,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketSell(orderId: string, amount: bigint): Dealt {
+  public MarketSell(orderId: string, amount: bigint): Dealt {
     this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
@@ -369,7 +369,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private cancelOrder(orderId: string): LimitOrder {
+  public CancelOrder(orderId: string): LimitOrder {
     this.validateOrderId(orderId);
 
     return this.state.storage.transactionSync(() => {

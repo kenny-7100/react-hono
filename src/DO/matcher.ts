@@ -97,7 +97,7 @@ export class MatcherDurableObject {
           break;
         }
 
-        const askAmount = BigInt(ask.amount);
+        const askAmount = ask.amount;
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
           filledOrders.push({
@@ -164,7 +164,7 @@ export class MatcherDurableObject {
           break;
         }
 
-        const bidAmount = BigInt(bid.amount);
+        const bidAmount = bid.amount;
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
           filledOrders.push({
@@ -229,7 +229,7 @@ export class MatcherDurableObject {
           break;
         }
 
-        const askAmount = BigInt(ask.amount);
+        const askAmount = ask.amount;
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
           filledOrders.push({
@@ -276,7 +276,7 @@ export class MatcherDurableObject {
           break;
         }
 
-        const bidAmount = BigInt(bid.amount);
+        const bidAmount = bid.amount;
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
           filledOrders.push({

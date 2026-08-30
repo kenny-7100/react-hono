@@ -12,6 +12,24 @@ export class MatcherDurableObject {
     );
   }
 
+  private limitBid(orderId: string, price: number, amount: number): void {
+    this.state.storage.sql.exec(
+      'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 0, ?, ?)',
+      orderId,
+      price,
+      amount,
+    );
+  }
+
+  private limitAsk(orderId: string, price: number, amount: number): void {
+    this.state.storage.sql.exec(
+      'INSERT INTO orders (order_id, side, price, amount) VALUES (?, 1, ?, ?)',
+      orderId,
+      price,
+      amount,
+    );
+  }
+
   private initializeSchema() {
     this.state.storage.sql.exec(`
       CREATE TABLE IF NOT EXISTS orders (

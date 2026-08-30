@@ -66,12 +66,13 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketBuy(orderId: string, amount: bigint): void {
+  private marketBuy(orderId: string, amount: bigint): Dealt {
     this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
-    this.state.storage.transactionSync(() => {
+    return this.state.storage.transactionSync(() => {
       let remainingAmount = amount;
+      const filledOrders: Order[] = [];
       while (remainingAmount > 0n) {
         const asks = this.state.storage.sql
           .exec<{
@@ -92,31 +93,51 @@ export class MatcherDurableObject {
           .toArray();
         const ask = asks[0];
         if (!ask) {
-          return;
+          break;
         }
 
         const askAmount = BigInt(ask.amount);
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
+          filledOrders.push({
+            orderId: ask.order_id,
+            status: DealStatus.FILLED,
+            price: BigInt(ask.price),
+            amount: askAmount,
+            dealtAmount: askAmount,
+          });
           this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', ask.sequence);
         } else {
+          filledOrders.push({
+            orderId: ask.order_id,
+            status: DealStatus.PARTIALLY_FILLED,
+            price: BigInt(ask.price),
+            amount: askAmount,
+            dealtAmount: remainingAmount,
+          });
           this.state.storage.sql.exec(
             'UPDATE orders SET amount = ? WHERE sequence = ?',
             askAmount - remainingAmount,
             ask.sequence,
           );
-          return;
+          remainingAmount = 0n;
         }
       }
+
+      return {
+        dealtAmount: amount - remainingAmount,
+        filledOrders,
+      };
     });
   }
 
-  private marketSell(orderId: string, amount: bigint): void {
+  private marketSell(orderId: string, amount: bigint): Dealt {
     this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
-    this.state.storage.transactionSync(() => {
+    return this.state.storage.transactionSync(() => {
       let remainingAmount = amount;
+      const filledOrders: Order[] = [];
       while (remainingAmount > 0n) {
         const bids = this.state.storage.sql
           .exec<{
@@ -137,22 +158,41 @@ export class MatcherDurableObject {
           .toArray();
         const bid = bids[0];
         if (!bid) {
-          return;
+          break;
         }
 
         const bidAmount = BigInt(bid.amount);
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
+          filledOrders.push({
+            orderId: bid.order_id,
+            status: DealStatus.FILLED,
+            price: BigInt(bid.price),
+            amount: bidAmount,
+            dealtAmount: bidAmount,
+          });
           this.state.storage.sql.exec('DELETE FROM orders WHERE sequence = ?', bid.sequence);
         } else {
+          filledOrders.push({
+            orderId: bid.order_id,
+            status: DealStatus.PARTIALLY_FILLED,
+            price: BigInt(bid.price),
+            amount: bidAmount,
+            dealtAmount: remainingAmount,
+          });
           this.state.storage.sql.exec(
             'UPDATE orders SET amount = ? WHERE sequence = ?',
             bidAmount - remainingAmount,
             bid.sequence,
           );
-          return;
+          remainingAmount = 0n;
         }
       }
+
+      return {
+        dealtAmount: amount - remainingAmount,
+        filledOrders,
+      };
     });
   }
 

@@ -101,11 +101,7 @@ export class MatcherDurableObject {
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
           filledOrders.push({
-            sequence: ask.sequence,
-            orderId: ask.orderId,
-            side: LimitSide.ASK,
-            price: BigInt(ask.price),
-            amount: askAmount,
+            ...ask,
             dealtAmount: askAmount,
           });
           this.state.storage.sql.exec(
@@ -114,11 +110,7 @@ export class MatcherDurableObject {
           );
         } else {
           filledOrders.push({
-            sequence: ask.sequence,
-            orderId: ask.orderId,
-            side: LimitSide.ASK,
-            price: BigInt(ask.price),
-            amount: askAmount,
+            ...ask,
             dealtAmount: remainingAmount,
           });
           this.state.storage.sql.exec(
@@ -176,11 +168,7 @@ export class MatcherDurableObject {
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
           filledOrders.push({
-            sequence: bid.sequence,
-            orderId: bid.orderId,
-            side: LimitSide.BID,
-            price: BigInt(bid.price),
-            amount: bidAmount,
+            ...bid,
             dealtAmount: bidAmount,
           });
           this.state.storage.sql.exec(
@@ -189,11 +177,7 @@ export class MatcherDurableObject {
           );
         } else {
           filledOrders.push({
-            sequence: bid.sequence,
-            orderId: bid.orderId,
-            side: LimitSide.BID,
-            price: BigInt(bid.price),
-            amount: bidAmount,
+            ...bid,
             dealtAmount: remainingAmount,
           });
           this.state.storage.sql.exec(
@@ -249,11 +233,7 @@ export class MatcherDurableObject {
         if (askAmount <= remainingAmount) {
           remainingAmount -= askAmount;
           filledOrders.push({
-            sequence: ask.sequence,
-            orderId: ask.orderId,
-            side: LimitSide.ASK,
-            price: BigInt(ask.price),
-            amount: askAmount,
+            ...ask,
             dealtAmount: askAmount,
           });
           this.state.storage.sql.exec(
@@ -262,11 +242,7 @@ export class MatcherDurableObject {
           );
         } else {
           filledOrders.push({
-            sequence: ask.sequence,
-            orderId: ask.orderId,
-            side: LimitSide.ASK,
-            price: BigInt(ask.price),
-            amount: askAmount,
+            ...ask,
             dealtAmount: remainingAmount,
           });
           this.state.storage.sql.exec(
@@ -304,11 +280,7 @@ export class MatcherDurableObject {
         if (bidAmount <= remainingAmount) {
           remainingAmount -= bidAmount;
           filledOrders.push({
-            sequence: bid.sequence,
-            orderId: bid.orderId,
-            side: LimitSide.BID,
-            price: BigInt(bid.price),
-            amount: bidAmount,
+            ...bid,
             dealtAmount: bidAmount,
           });
           this.state.storage.sql.exec(
@@ -317,11 +289,7 @@ export class MatcherDurableObject {
           );
         } else {
           filledOrders.push({
-            sequence: bid.sequence,
-            orderId: bid.orderId,
-            side: LimitSide.BID,
-            price: BigInt(bid.price),
-            amount: bidAmount,
+            ...bid,
             dealtAmount: remainingAmount,
           });
           this.state.storage.sql.exec(

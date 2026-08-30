@@ -271,12 +271,18 @@ export class MatcherDurableObject {
   }
 
   private validateSQLitePositiveInteger(value: bigint, field: string): void {
+    if (typeof value !== 'bigint') {
+      throw new TypeError(`${field} must be a bigint`);
+    }
     if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
       throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
     }
   }
 
   private bigint2SQLiteInteger(value: bigint): string {
+    if (typeof value !== 'bigint') {
+      throw new TypeError('value must be a bigint');
+    }
     if (
       value < MatcherDurableObject.SQLITE_INTEGER_MIN ||
       value > MatcherDurableObject.SQLITE_INTEGER_MAX

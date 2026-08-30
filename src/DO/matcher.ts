@@ -46,8 +46,8 @@ export class MatcherDurableObject {
   }
 
   private queryLimitOrder(side: LimitSide, limit?: bigint, price?: bigint): LimitOrder[] {
-    limit != null && this.validateOrderInteger(limit, 'limit');
-    price != null && this.validateOrderInteger(price, 'price');
+    limit != null && this.validateSQLitePositiveInteger(limit, 'limit');
+    price != null && this.validateSQLitePositiveInteger(price, 'price');
     const baseSQL =
       `SELECT
         CAST(sequence AS TEXT) AS sequence,
@@ -84,8 +84,8 @@ export class MatcherDurableObject {
 
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
-    this.validateOrderInteger(price, 'price');
-    this.validateOrderInteger(amount, 'amount');
+    this.validateSQLitePositiveInteger(price, 'price');
+    this.validateSQLitePositiveInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
@@ -174,8 +174,8 @@ export class MatcherDurableObject {
 
   public LimitAsk(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
-    this.validateOrderInteger(price, 'price');
-    this.validateOrderInteger(amount, 'amount');
+    this.validateSQLitePositiveInteger(price, 'price');
+    this.validateSQLitePositiveInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
@@ -264,7 +264,7 @@ export class MatcherDurableObject {
 
   public MarketBuy(orderId: string, amount: bigint): Dealt {
     this.validateOrderId(orderId);
-    this.validateOrderInteger(amount, 'amount');
+    this.validateSQLitePositiveInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
@@ -333,7 +333,7 @@ export class MatcherDurableObject {
 
   public MarketSell(orderId: string, amount: bigint): Dealt {
     this.validateOrderId(orderId);
-    this.validateOrderInteger(amount, 'amount');
+    this.validateSQLitePositiveInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
@@ -401,7 +401,7 @@ export class MatcherDurableObject {
   }
 
   public GetBids(price: bigint): LimitOrder[] {
-    this.validateOrderInteger(price, 'price');
+    this.validateSQLitePositiveInteger(price, 'price');
 
     return this.state.storage.transactionSync(() => {
       return this.state.storage.sql
@@ -430,7 +430,7 @@ export class MatcherDurableObject {
   }
 
   public GetAsks(price: bigint): LimitOrder[] {
-    this.validateOrderInteger(price, 'price');
+    this.validateSQLitePositiveInteger(price, 'price');
 
     return this.state.storage.transactionSync(() => {
       return this.state.storage.sql
@@ -495,7 +495,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private validateOrderInteger(value: bigint, field: string): void {
+  private validateSQLitePositiveInteger(value: bigint, field: string): void {
     if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
       throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
     }

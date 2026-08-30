@@ -1,11 +1,24 @@
 
+enum OrderSide {
+  BID = 0,
+  ASK = 1,
+}
+
 enum DealStatus {
   FILLED = 0,
   PARTIALLY_FILLED = 1,
 }
 
-interface Order {
+interface LimitOrder {
   orderId: string;
+  side: OrderSide;
+  price: bigint;
+  amount: bigint;
+}
+
+interface FilledOrder {
+  orderId: string;
+  side: OrderSide;
   status: DealStatus;
   price: bigint;
   amount: bigint;
@@ -14,12 +27,12 @@ interface Order {
 
 interface Dealt {
   dealtAmount: bigint;
-  filledOrders: Order[];
+  filledOrders: FilledOrder[];
 }
 
 interface LimitResult {
   dealt?: Dealt;
-  order?: Order;
+  order?: LimitOrder;
 }
 
 export class MatcherDurableObject {
@@ -72,7 +85,7 @@ export class MatcherDurableObject {
 
     return this.state.storage.transactionSync(() => {
       let remainingAmount = amount;
-      const filledOrders: Order[] = [];
+      const filledOrders: FilledOrder[] = [];
       while (remainingAmount > 0n) {
         const asks = this.state.storage.sql
           .exec<{
@@ -101,6 +114,7 @@ export class MatcherDurableObject {
           remainingAmount -= askAmount;
           filledOrders.push({
             orderId: ask.order_id,
+            side: OrderSide.ASK,
             status: DealStatus.FILLED,
             price: BigInt(ask.price),
             amount: askAmount,
@@ -110,6 +124,7 @@ export class MatcherDurableObject {
         } else {
           filledOrders.push({
             orderId: ask.order_id,
+            side: OrderSide.ASK,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(ask.price),
             amount: askAmount,
@@ -137,7 +152,7 @@ export class MatcherDurableObject {
 
     return this.state.storage.transactionSync(() => {
       let remainingAmount = amount;
-      const filledOrders: Order[] = [];
+      const filledOrders: FilledOrder[] = [];
       while (remainingAmount > 0n) {
         const bids = this.state.storage.sql
           .exec<{
@@ -166,6 +181,7 @@ export class MatcherDurableObject {
           remainingAmount -= bidAmount;
           filledOrders.push({
             orderId: bid.order_id,
+            side: OrderSide.BID,
             status: DealStatus.FILLED,
             price: BigInt(bid.price),
             amount: bidAmount,
@@ -175,6 +191,7 @@ export class MatcherDurableObject {
         } else {
           filledOrders.push({
             orderId: bid.order_id,
+            side: OrderSide.BID,
             status: DealStatus.PARTIALLY_FILLED,
             price: BigInt(bid.price),
             amount: bidAmount,

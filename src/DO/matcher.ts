@@ -50,7 +50,9 @@ export class MatcherDurableObject {
     if (side !== LimitSide.BID && side !== LimitSide.ASK) {
       throw new RangeError(`Invalid limit order side: ${side}`);
     }
-    limit != null && this.validateSQLitePositiveInteger(limit, 'limit');
+    if (limit != null && (!Number.isSafeInteger(limit) || limit <= 0)) {
+      throw new RangeError('limit must be a positive safe integer');
+    }
     price != null && this.validateSQLitePositiveInteger(price, 'price');
 
     const baseSQL =

@@ -425,6 +425,7 @@ export class MatcherDurableObject {
         orderId,
       );
     } catch {
+      // Keep registration failures opaque to callers, including duplicate IDs.
       throw new Error(`Failed to register order: ${orderId}`);
     }
   }

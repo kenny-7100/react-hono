@@ -57,6 +57,8 @@ export class MatcherDurableObject {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
+      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
 
@@ -145,6 +147,8 @@ export class MatcherDurableObject {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
+      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
 
@@ -227,10 +231,13 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketBuy(amount: bigint): Dealt {
+  private marketBuy(orderId: string, amount: bigint): Dealt {
+    this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
+      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
       while (remainingAmount > 0n) {
@@ -293,10 +300,13 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketSell(amount: bigint): Dealt {
+  private marketSell(orderId: string, amount: bigint): Dealt {
+    this.validateOrderId(orderId);
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
+      this.state.storage.sql.exec('INSERT INTO order_ids (order_id) VALUES (?)', orderId);
+
       let remainingAmount = amount;
       const filledOrders: FilledOrder[] = [];
       while (remainingAmount > 0n) {
@@ -410,6 +420,10 @@ export class MatcherDurableObject {
 
   private initializeSchema() {
     this.state.storage.sql.exec(`
+      CREATE TABLE IF NOT EXISTS order_ids (
+        order_id TEXT PRIMARY KEY
+      );
+
       CREATE TABLE IF NOT EXISTS orders (
         sequence INTEGER PRIMARY KEY AUTOINCREMENT,
         order_id TEXT NOT NULL UNIQUE,

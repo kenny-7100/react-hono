@@ -37,6 +37,7 @@ interface LimitResult {
 }
 
 export class MatcherDurableObject {
+  private static readonly SQLITE_INTEGER_MIN = -(2n ** 63n);
   private static readonly SQLITE_INTEGER_MAX = 2n ** 63n - 1n;
 
   constructor(private readonly state: DurableObjectState) {

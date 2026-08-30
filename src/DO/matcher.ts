@@ -425,7 +425,7 @@ export class MatcherDurableObject {
         orderId,
       );
     } catch {
-      throw new Error(`Request already processed: ${orderId}`);
+      throw new Error(`Failed to register order: ${orderId}`);
     }
   }
 

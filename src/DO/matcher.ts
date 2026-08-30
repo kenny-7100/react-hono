@@ -80,6 +80,10 @@ export class MatcherDurableObject {
       }));
   }
 
+  private matchOrder(side: LimitSide, amount: bigint, price?: bigint) {
+
+  }
+
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateSQLitePositiveInteger(price, 'price');

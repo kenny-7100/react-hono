@@ -227,8 +227,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketBuy(orderId: string, amount: bigint): Dealt {
-    this.validateOrderId(orderId);
+  private marketBuy(amount: bigint): Dealt {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
@@ -294,8 +293,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private marketSell(orderId: string, amount: bigint): Dealt {
-    this.validateOrderId(orderId);
+  private marketSell(amount: bigint): Dealt {
     this.validateOrderInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {

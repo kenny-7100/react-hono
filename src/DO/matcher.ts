@@ -1,3 +1,27 @@
+
+enum DealStatus {
+  FILLED = 0,
+  PARTIALLY_FILLED = 1,
+}
+
+interface Order {
+  orderId: string;
+  status: DealStatus;
+  price: bigint;
+  amount: bigint;
+  dealtAmount: bigint;
+}
+
+interface Dealt {
+  dealtAmount: bigint;
+  filledOrders: Order[];
+}
+
+interface LimitResult {
+  dealt?: Dealt;
+  order?: Order;
+}
+
 export class MatcherDurableObject {
   private static readonly SQLITE_INTEGER_MAX = 2n ** 63n - 1n;
 

@@ -50,9 +50,9 @@ export class MatcherDurableObject {
     if (side !== LimitSide.BID && side !== LimitSide.ASK) {
       throw new RangeError(`Invalid limit order side: ${side}`);
     }
-
     limit != null && this.validateSQLitePositiveInteger(limit, 'limit');
     price != null && this.validateSQLitePositiveInteger(price, 'price');
+
     const baseSQL =
       `SELECT
         CAST(sequence AS TEXT) AS sequence,
@@ -70,6 +70,7 @@ export class MatcherDurableObject {
     const orderBySQL = `ORDER BY price ${side === LimitSide.BID ? 'DESC' : 'ASC'}, sequence ASC`;
     const limitSQL = limit != null ? `LIMIT ?` : '';
     limit != null && bindings.push(limit);
+
     return this.state.storage.sql
       .exec<{
         sequence: string;

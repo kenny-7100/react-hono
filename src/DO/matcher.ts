@@ -44,6 +44,24 @@ export class MatcherDurableObject {
     });
   }
 
+  private sqlBuilder() {
+    return `
+      SELECT
+        sequence,
+        order_id,
+        side,
+        CAST(price AS TEXT) AS price,
+        CAST(amount AS TEXT) AS amount
+      FROM
+        orders
+      WHERE
+        side = 1 AND price <= ?
+      ORDER BY
+        price ASC, sequence ASC
+      LIMIT 1
+    `.trim();
+  }
+
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateOrderInteger(price, 'price');

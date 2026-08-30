@@ -46,7 +46,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private queryLimitOrder(side: LimitSide, limit?: number, price?: bigint): LimitOrder[] {
+  private queryLimitOrder(side: LimitSide, limit: number | null = null, price?: bigint): LimitOrder[] {
     if (side !== LimitSide.BID && side !== LimitSide.ASK) {
       throw new RangeError(`invalid limit order side: ${side}`);
     }
@@ -409,60 +409,14 @@ export class MatcherDurableObject {
   }
 
   public GetBids(price: bigint): LimitOrder[] {
-    this.validateSQLitePositiveInteger(price, 'price');
-
     return this.state.storage.transactionSync(() => {
-      return this.state.storage.sql
-        .exec<{
-          orderId: string;
-          side: number;
-          price: string;
-          amount: string;
-        }>(
-          `SELECT orderId, side,
-                  CAST(price AS TEXT) AS price,
-                  CAST(amount AS TEXT) AS amount
-           FROM orders
-           WHERE side = 0 AND price >= ?
-           ORDER BY price DESC, sequence ASC`,
-          price,
-        )
-        .toArray()
-        .map((order) => ({
-          orderId: order.orderId,
-          side: order.side as LimitSide,
-          price: BigInt(order.price),
-          amount: BigInt(order.amount),
-        }));
+      return this.queryLimitOrder(LimitSide.BID, null, price);
     });
   }
 
   public GetAsks(price: bigint): LimitOrder[] {
-    this.validateSQLitePositiveInteger(price, 'price');
-
     return this.state.storage.transactionSync(() => {
-      return this.state.storage.sql
-        .exec<{
-          orderId: string;
-          side: number;
-          price: string;
-          amount: string;
-        }>(
-          `SELECT orderId, side,
-                  CAST(price AS TEXT) AS price,
-                  CAST(amount AS TEXT) AS amount
-           FROM orders
-           WHERE side = 1 AND price <= ?
-           ORDER BY price ASC, sequence ASC`,
-          price,
-        )
-        .toArray()
-        .map((order) => ({
-          orderId: order.orderId,
-          side: order.side as LimitSide,
-          price: BigInt(order.price),
-          amount: BigInt(order.amount),
-        }));
+      return this.queryLimitOrder(LimitSide.ASK, null, price);
     });
   }
 

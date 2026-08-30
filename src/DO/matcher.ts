@@ -151,8 +151,8 @@ export class MatcherDurableObject {
         .exec<{ sequence: string }>(
           'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 0, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
           order.orderId,
-          order.price,
-          order.amount,
+          this.bigint2SQLiteInteger(order.price),
+          this.bigint2SQLiteInteger(order.amount),
         )
         .one();
       order.sequence = BigInt(inserted.sequence);
@@ -186,8 +186,8 @@ export class MatcherDurableObject {
         .exec<{ sequence: string }>(
           'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 1, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
           order.orderId,
-          order.price,
-          order.amount,
+          this.bigint2SQLiteInteger(order.price),
+          this.bigint2SQLiteInteger(order.amount),
         )
         .one();
       order.sequence = BigInt(inserted.sequence);

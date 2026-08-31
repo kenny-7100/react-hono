@@ -126,36 +126,48 @@ export class MatcherDurableObject {
     };
   }
 
+  private limitOrder(orderId: string, side: LimitSide, price: bigint, amount: bigint) {
+    this.validateOrderId(orderId);
+    if (side !== LimitSide.BID && side !== LimitSide.ASK) {
+      throw new RangeError(`invalid limit order side: ${side}`);
+    }
+    this.validateSQLitePositiveInteger(price, 'price');
+    this.validateSQLitePositiveInteger(amount, 'amount');
+
+    this.registerOrderId(orderId);
+
+    const inserted = this.state.storage.sql
+      .exec<{ sequence: string }>(
+        'INSERT INTO orders (orderId, side, price, amount) VALUES (?, ?, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
+        orderId,
+        side as number,
+        this.bigint2SQLiteInteger(price),
+        this.bigint2SQLiteInteger(amount),
+      )
+      .one();
+    return {
+      sequence: BigInt(inserted.sequence),
+      orderId,
+      side,
+      price,
+      amount,
+    };
+  }
+
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateSQLitePositiveInteger(price, 'price');
     this.validateSQLitePositiveInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
-      this.registerOrderId(orderId);
-
       const dealt = this.matchOrder(LimitSide.ASK, amount, price);
       const remainingAmount = amount - dealt.dealtAmount;
       if (remainingAmount === 0n) {
+        this.registerOrderId(orderId);
         return { dealt };
       }
 
-      const order: LimitOrder = {
-        sequence: 0n,
-        orderId,
-        side: LimitSide.BID,
-        price,
-        amount: remainingAmount,
-      };
-      const inserted = this.state.storage.sql
-        .exec<{ sequence: string }>(
-          'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 0, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
-          order.orderId,
-          this.bigint2SQLiteInteger(order.price),
-          this.bigint2SQLiteInteger(order.amount),
-        )
-        .one();
-      order.sequence = BigInt(inserted.sequence);
+      const order = this.limitOrder(orderId, LimitSide.BID, price, remainingAmount);
 
       return dealt.dealtAmount === 0n ? { order } : { order, dealt };
     });
@@ -167,30 +179,14 @@ export class MatcherDurableObject {
     this.validateSQLitePositiveInteger(amount, 'amount');
 
     return this.state.storage.transactionSync(() => {
-      this.registerOrderId(orderId);
-
       const dealt = this.matchOrder(LimitSide.BID, amount, price);
       const remainingAmount = amount - dealt.dealtAmount;
       if (remainingAmount === 0n) {
+        this.registerOrderId(orderId);
         return { dealt };
       }
 
-      const order: LimitOrder = {
-        sequence: 0n,
-        orderId,
-        side: LimitSide.ASK,
-        price,
-        amount: remainingAmount,
-      };
-      const inserted = this.state.storage.sql
-        .exec<{ sequence: string }>(
-          'INSERT INTO orders (orderId, side, price, amount) VALUES (?, 1, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',
-          order.orderId,
-          this.bigint2SQLiteInteger(order.price),
-          this.bigint2SQLiteInteger(order.amount),
-        )
-        .one();
-      order.sequence = BigInt(inserted.sequence);
+      const order = this.limitOrder(orderId, LimitSide.ASK, price, remainingAmount);
 
       return dealt.dealtAmount === 0n ? { order } : { order, dealt };
     });

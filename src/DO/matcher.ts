@@ -184,10 +184,6 @@ export class MatcherDurableObject {
   }
 
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
-    this.validateOrderId(orderId);
-    this.validateSQLitePositiveInteger(price, 'price');
-    this.validateSQLitePositiveInteger(amount, 'amount');
-
     return this.state.storage.transactionSync(() => {
       const dealt = this.matchOrder(LimitSide.ASK, amount, price);
       const remainingAmount = amount - dealt.dealtAmount;
@@ -203,10 +199,6 @@ export class MatcherDurableObject {
   }
 
   public LimitAsk(orderId: string, price: bigint, amount: bigint): LimitResult {
-    this.validateOrderId(orderId);
-    this.validateSQLitePositiveInteger(price, 'price');
-    this.validateSQLitePositiveInteger(amount, 'amount');
-
     return this.state.storage.transactionSync(() => {
       const dealt = this.matchOrder(LimitSide.BID, amount, price);
       const remainingAmount = amount - dealt.dealtAmount;
@@ -222,9 +214,6 @@ export class MatcherDurableObject {
   }
 
   public MarketBuy(orderId: string, amount: bigint): Dealt {
-    this.validateOrderId(orderId);
-    this.validateSQLitePositiveInteger(amount, 'amount');
-
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
       return this.matchOrder(LimitSide.ASK, amount);
@@ -232,9 +221,6 @@ export class MatcherDurableObject {
   }
 
   public MarketSell(orderId: string, amount: bigint): Dealt {
-    this.validateOrderId(orderId);
-    this.validateSQLitePositiveInteger(amount, 'amount');
-
     return this.state.storage.transactionSync(() => {
       this.registerOrderId(orderId);
       return this.matchOrder(LimitSide.BID, amount);
@@ -254,8 +240,6 @@ export class MatcherDurableObject {
   }
 
   public CancelOrder(orderId: string): LimitOrder {
-    this.validateOrderId(orderId);
-
     return this.state.storage.transactionSync(() => {
       return this.deleteOrder(orderId);
     });
@@ -293,6 +277,8 @@ export class MatcherDurableObject {
   }
 
   private registerOrderId(orderId: string): void {
+    this.validateOrderId(orderId);
+
     try {
       this.state.storage.sql.exec(
         'INSERT INTO order_ids (orderId) VALUES (?)',

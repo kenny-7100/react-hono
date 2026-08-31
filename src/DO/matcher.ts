@@ -155,6 +155,8 @@ export class MatcherDurableObject {
   }
 
   private deleteOrder(orderId: string): LimitOrder {
+    this.validateOrderId(orderId);
+
     const orders = this.state.storage.sql
       .exec<{
         sequence: string;

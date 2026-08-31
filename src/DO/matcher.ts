@@ -154,6 +154,37 @@ export class MatcherDurableObject {
     };
   }
 
+  private deleteOrder(orderId: string): LimitOrder {
+    const orders = this.state.storage.sql
+      .exec<{
+        sequence: string;
+        orderId: string;
+        side: number;
+        price: string;
+        amount: string;
+      }>(
+        `DELETE FROM orders
+         WHERE orderId = ?
+         RETURNING CAST(sequence AS TEXT) AS sequence, orderId, side,
+                   CAST(price AS TEXT) AS price,
+                   CAST(amount AS TEXT) AS amount`,
+        orderId,
+      )
+      .toArray();
+    const order = orders[0];
+    if (!order) {
+      throw new Error(`Order not found: ${orderId}`);
+    }
+
+    return {
+      sequence: BigInt(order.sequence),
+      orderId: order.orderId,
+      side: order.side as LimitSide,
+      price: BigInt(order.price),
+      amount: BigInt(order.amount),
+    };
+  }
+
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     this.validateOrderId(orderId);
     this.validateSQLitePositiveInteger(price, 'price');
@@ -228,41 +259,7 @@ export class MatcherDurableObject {
     this.validateOrderId(orderId);
 
     return this.state.storage.transactionSync(() => {
-      const orders = this.state.storage.sql
-        .exec<{
-          sequence: string;
-          orderId: string;
-          side: number;
-          price: string;
-          amount: string;
-        }>(
-          `SELECT CAST(sequence AS TEXT) AS sequence, orderId, side,
-                  CAST(price AS TEXT) AS price,
-                  CAST(amount AS TEXT) AS amount
-           FROM orders
-           WHERE orderId = ?
-           LIMIT 1`,
-          orderId,
-        )
-        .toArray();
-      const order = orders[0];
-      if (!order) {
-        throw new Error(`Order not found: ${orderId}`);
-      }
-
-      const sequence = BigInt(order.sequence);
-      this.state.storage.sql.exec(
-        'DELETE FROM orders WHERE sequence = ?',
-        this.bigint2SQLiteInteger(sequence),
-      );
-
-      return {
-        sequence,
-        orderId: order.orderId,
-        side: order.side as LimitSide,
-        price: BigInt(order.price),
-        amount: BigInt(order.amount),
-      };
+      return this.deleteOrder(orderId);
     });
   }
 

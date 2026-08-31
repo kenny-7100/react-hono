@@ -12,6 +12,14 @@ interface LimitOrder {
   amount: bigint;
 }
 
+type LimitOrderRow = {
+  sequence: string;
+  orderId: string;
+  side: number;
+  price: string;
+  amount: string;
+};
+
 interface FilledOrder extends LimitOrder {
   dealtAmount: bigint;
 }
@@ -64,13 +72,7 @@ export class MatcherDurableObject {
     limit != null && bindings.push(limit);
 
     return this.state.storage.sql
-      .exec<{
-        sequence: string;
-        orderId: string;
-        side: number;
-        price: string;
-        amount: string;
-      }>(`${baseSQL} ${andPriceSQL} ${orderBySQL} ${limitSQL}`, ...bindings)
+      .exec<LimitOrderRow>(`${baseSQL} ${andPriceSQL} ${orderBySQL} ${limitSQL}`, ...bindings)
       .toArray().map((order) => ({
         sequence: BigInt(order.sequence),
         orderId: order.orderId,
@@ -126,7 +128,7 @@ export class MatcherDurableObject {
     };
   }
 
-  private limitOrder(orderId: string, side: LimitSide, price: bigint, amount: bigint) {
+  private limitOrder(orderId: string, side: LimitSide, price: bigint, amount: bigint): LimitOrder {
     this.validateOrderId(orderId);
     if (side !== LimitSide.BID && side !== LimitSide.ASK) {
       throw new RangeError(`invalid limit order side: ${side}`);
@@ -158,13 +160,7 @@ export class MatcherDurableObject {
     this.validateOrderId(orderId);
 
     const orders = this.state.storage.sql
-      .exec<{
-        sequence: string;
-        orderId: string;
-        side: number;
-        price: string;
-        amount: string;
-      }>(
+      .exec<LimitOrderRow>(
         `DELETE FROM orders
          WHERE orderId = ?
          RETURNING CAST(sequence AS TEXT) AS sequence, orderId, side,

@@ -44,6 +44,20 @@ export class MatcherDurableObject {
     });
   }
 
+  private registerOrderId(orderId: string): void {
+    this.validateOrderId(orderId);
+
+    try {
+      this.state.storage.sql.exec(
+        'INSERT INTO order_ids (orderId) VALUES (?)',
+        orderId,
+      );
+    } catch {
+      // Keep registration failures opaque to callers, including duplicate IDs.
+      throw new Error(`Failed to register order: ${orderId}`);
+    }
+  }
+
   private queryLimitOrder(side: LimitSide, limit: number | null = null, price?: bigint): LimitOrder[] {
     if (side !== LimitSide.BID && side !== LimitSide.ASK) {
       throw new RangeError(`invalid limit order side: ${side}`);
@@ -245,6 +259,12 @@ export class MatcherDurableObject {
     });
   }
 
+  private validateOrderId(orderId: string) {
+    if (typeof orderId !== 'string' || orderId.trim().length === 0) {
+      throw new RangeError('orderId must be a non-empty string');
+    }
+  }
+
   private validateSQLitePositiveInteger(value: bigint, field: string) {
     if (typeof value !== 'bigint') {
       throw new TypeError(`${field} must be a bigint`);
@@ -262,26 +282,6 @@ export class MatcherDurableObject {
       throw new RangeError(`value must be between ${MatcherDurableObject.SQLITE_INTEGER_MIN} and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
     }
     return value.toString();
-  }
-
-  private validateOrderId(orderId: string) {
-    if (typeof orderId !== 'string' || orderId.trim().length === 0) {
-      throw new RangeError('orderId must be a non-empty string');
-    }
-  }
-
-  private registerOrderId(orderId: string): void {
-    this.validateOrderId(orderId);
-
-    try {
-      this.state.storage.sql.exec(
-        'INSERT INTO order_ids (orderId) VALUES (?)',
-        orderId,
-      );
-    } catch {
-      // Keep registration failures opaque to callers, including duplicate IDs.
-      throw new Error(`Failed to register order: ${orderId}`);
-    }
   }
 
   private initializeSchema() {

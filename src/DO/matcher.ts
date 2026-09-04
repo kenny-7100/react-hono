@@ -196,10 +196,10 @@ export class MatcherDurableObject {
 
   public LimitBid(orderId: string, price: bigint, amount: bigint): LimitResult {
     return this.state.storage.transactionSync(() => {
+      this.registerOrderId(orderId);
       const dealt = this.matchOrder(LimitSide.ASK, amount, price);
       const remainingAmount = amount - dealt.dealtAmount;
       if (remainingAmount === 0n) {
-        this.registerOrderId(orderId);
         return { dealt };
       }
 
@@ -211,10 +211,10 @@ export class MatcherDurableObject {
 
   public LimitAsk(orderId: string, price: bigint, amount: bigint): LimitResult {
     return this.state.storage.transactionSync(() => {
+      this.registerOrderId(orderId);
       const dealt = this.matchOrder(LimitSide.BID, amount, price);
       const remainingAmount = amount - dealt.dealtAmount;
       if (remainingAmount === 0n) {
-        this.registerOrderId(orderId);
         return { dealt };
       }
 

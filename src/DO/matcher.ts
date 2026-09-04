@@ -245,7 +245,7 @@ export class MatcherDurableObject {
     });
   }
 
-  private validateSQLitePositiveInteger(value: bigint, field: string): void {
+  private validateSQLitePositiveInteger(value: bigint, field: string) {
     if (typeof value !== 'bigint') {
       throw new TypeError(`${field} must be a bigint`);
     }
@@ -254,23 +254,17 @@ export class MatcherDurableObject {
     }
   }
 
-  private bigint2SQLiteInteger(value: bigint): string {
+  private bigint2SQLiteInteger(value: bigint) {
     if (typeof value !== 'bigint') {
       throw new TypeError('value must be a bigint');
     }
-    if (
-      value < MatcherDurableObject.SQLITE_INTEGER_MIN ||
-      value > MatcherDurableObject.SQLITE_INTEGER_MAX
-    ) {
-      throw new RangeError(
-        `value must be between ${MatcherDurableObject.SQLITE_INTEGER_MIN} and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`,
-      );
+    if (value < MatcherDurableObject.SQLITE_INTEGER_MIN || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
+      throw new RangeError(`value must be between ${MatcherDurableObject.SQLITE_INTEGER_MIN} and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
     }
-
     return value.toString();
   }
 
-  private validateOrderId(orderId: string): void {
+  private validateOrderId(orderId: string) {
     if (typeof orderId !== 'string' || orderId.trim().length === 0) {
       throw new RangeError('orderId must be a non-empty string');
     }

@@ -147,8 +147,6 @@ export class MatcherDurableObject {
     this.validateSQLitePositiveInteger(price, 'price');
     this.validateSQLitePositiveInteger(amount, 'amount');
 
-    this.registerOrderId(orderId);
-
     const inserted = this.state.storage.sql
       .exec<{ sequence: string }>(
         'INSERT INTO orders (orderId, side, price, amount) VALUES (?, ?, ?, ?) RETURNING CAST(sequence AS TEXT) AS sequence',

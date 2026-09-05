@@ -56,9 +56,7 @@ export class MatcherDurableObject {
   }
 
   private queryLimitOrder(side: LimitSide, limit: number | null = null, price?: bigint): LimitOrder[] {
-    if (side !== LimitSide.BID && side !== LimitSide.ASK) {
-      throw new RangeError(`invalid limit order side: ${side}`);
-    }
+    this.validateLimitSide(side);
     if (limit != null && (!Number.isSafeInteger(limit) || limit <= 0)) {
       throw new RangeError('limit must be a positive safe integer');
     }
@@ -94,9 +92,7 @@ export class MatcherDurableObject {
   }
 
   private matchOrder(makerSide: LimitSide, amount: bigint, price?: bigint): Dealt {
-    if (makerSide !== LimitSide.BID && makerSide !== LimitSide.ASK) {
-      throw new RangeError(`invalid limit order side: ${makerSide}`);
-    }
+    this.validateLimitSide(makerSide);
     this.validateSQLitePositiveInteger(amount, 'amount');
     price != null && this.validateSQLitePositiveInteger(price, 'price');
 
@@ -141,9 +137,7 @@ export class MatcherDurableObject {
 
   private limitOrder(orderId: string, side: LimitSide, price: bigint, amount: bigint): LimitOrder {
     this.validateOrderId(orderId);
-    if (side !== LimitSide.BID && side !== LimitSide.ASK) {
-      throw new RangeError(`invalid limit order side: ${side}`);
-    }
+    this.validateLimitSide(side);
     this.validateSQLitePositiveInteger(price, 'price');
     this.validateSQLitePositiveInteger(amount, 'amount');
 
@@ -257,6 +251,12 @@ export class MatcherDurableObject {
   private validateOrderId(orderId: string) {
     if (typeof orderId !== 'string' || orderId.trim().length === 0) {
       throw new RangeError('orderId must be a non-empty string');
+    }
+  }
+
+  private validateLimitSide(side: LimitSide) {
+    if (side !== LimitSide.BID && side !== LimitSide.ASK) {
+      throw new RangeError(`Invalid limit order side: ${side}`);
     }
   }
 

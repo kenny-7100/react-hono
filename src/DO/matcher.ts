@@ -246,6 +246,24 @@ export class MatcherDurableObject {
     });
   }
 
+  public UpdateOrder(orderId: string, newOrderId: string, price: bigint, amount: bigint): LimitResult {
+    return this.state.storage.transactionSync(() => {
+      this.registerOrderId(newOrderId);
+
+      const oldOrder = this.deleteOrder(orderId);
+      const makerSide = oldOrder.side === LimitSide.BID ? LimitSide.ASK : LimitSide.BID;
+      const dealt = this.matchOrder(makerSide, amount, price);
+      const remainingAmount = amount - dealt.dealtAmount;
+      if (remainingAmount === 0n) {
+        return { dealt };
+      }
+
+      const order = this.limitOrder(newOrderId, oldOrder.side, price, remainingAmount);
+
+      return dealt.dealtAmount === 0n ? { order } : { order, dealt };
+    });
+  }
+
   private validateOrderId(orderId: string) {
     if (typeof orderId !== 'string' || orderId.trim().length === 0) {
       throw new RangeError('orderId must be a non-empty string');

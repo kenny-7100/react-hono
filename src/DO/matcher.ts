@@ -57,9 +57,7 @@ export class MatcherDurableObject {
 
   private queryLimitOrder(side: LimitSide, limit: number | null = null, price?: bigint): LimitOrder[] {
     this.validateLimitSide(side);
-    if (limit != null && (!Number.isSafeInteger(limit) || limit <= 0)) {
-      throw new RangeError('limit must be a positive safe integer');
-    }
+    limit != null && this.validateSQLitePositiveInteger(limit, 'limit');
     price != null && this.validateSQLitePositiveInteger(price, 'price');
 
     const baseSQL =
@@ -260,12 +258,17 @@ export class MatcherDurableObject {
     }
   }
 
-  private validateSQLitePositiveInteger(value: bigint, field: string) {
-    if (typeof value !== 'bigint') {
-      throw new TypeError(`${field} must be a bigint`);
-    }
-    if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
-      throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
+  private validateSQLitePositiveInteger(value: bigint | number, field: string) {
+    if (typeof value === 'bigint') {
+      if (value <= 0n || value > MatcherDurableObject.SQLITE_INTEGER_MAX) {
+        throw new RangeError(`${field} must be between 1 and ${MatcherDurableObject.SQLITE_INTEGER_MAX}`);
+      }
+    } else if (typeof value === 'number') {
+      if (!Number.isSafeInteger(value) || value <= 0) {
+        throw new RangeError(`${field} must be a positive safe integer`);
+      }
+    } else {
+      throw new TypeError(`${field} must be a bigint or number`);
     }
   }
 

@@ -28,7 +28,9 @@ app.get('/api/hello', async (c) => {
 
     await new Promise((resolve) => setTimeout(resolve, 25_000));
 
-    const cardHtml = await cards.evaluate((element) => element.outerHTML);
+    const cardHtml = await cards.evaluate(
+      (element) => (element as unknown as { outerHTML: string }).outerHTML,
+    );
     const tooltipTriggers = await page.$$(TOOLTIP_TRIGGER_SELECTOR);
 
     if (tooltipTriggers.length === 0) {
@@ -48,7 +50,10 @@ app.get('/api/hello', async (c) => {
       }
 
       tooltipHtml.push(
-        await tooltipPopup.evaluate((element) => element.outerHTML),
+        await tooltipPopup.evaluate(
+          (element) =>
+            (element as unknown as { outerHTML: string }).outerHTML,
+        ),
       );
     }
 

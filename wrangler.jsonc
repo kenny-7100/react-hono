@@ -5,6 +5,9 @@
   "compatibility_date": "2026-08-19",
   "workers_dev": true,
   "preview_urls": true,
+  "browser": {
+    "binding": "BROWSER"
+  },
   "assets": {
     "directory": "./ui/dist",
     "not_found_handling": "single-page-application",

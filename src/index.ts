@@ -24,6 +24,8 @@ app.get('/api/hello', async (c) => {
       return c.text('Dashboard cards container was not found', 504);
     }
 
+    await new Promise((resolve) => setTimeout(resolve, 25_000));
+
     const html = await cards.evaluate((element) => element.outerHTML);
     return c.html(html);
   } finally {

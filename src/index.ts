@@ -22,21 +22,34 @@ type Stat = {
 };
 
 app.get('/api/hello', async (c) => {
-  const browser = await puppeteer.launch(c.env.BROWSER);
+  const requestId = crypto.randomUUID();
+  let phase = 'launching browser';
+  let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
   try {
+    browser = await puppeteer.launch(c.env.BROWSER);
+
+    phase = 'opening page';
     const page = await browser.newPage();
+
+    phase = `navigating to ${STATS_URL}`;
     await page.goto(STATS_URL, { waitUntil: 'domcontentloaded', timeout: 25_000 });
+
+    phase = `waiting for dashboard cards (${DASHBOARD_CARDS_SELECTOR})`;
     const cards = await page.waitForSelector(DASHBOARD_CARDS_SELECTOR, {
       timeout: 25_000,
     });
 
     if (!cards) {
-      return c.text('Dashboard cards container was not found', 504);
+      throw new Error(
+        `Dashboard cards container was not found: ${DASHBOARD_CARDS_SELECTOR}`,
+      );
     }
 
+    phase = 'waiting for dashboard data';
     await new Promise((resolve) => setTimeout(resolve, 25_000));
 
+    phase = 'extracting dashboard card values';
     const stats = await page.$$eval(
       DASHBOARD_CARD_ROW_SELECTOR,
       (rows) =>
@@ -62,9 +75,11 @@ app.get('/api/hello', async (c) => {
         }, {}),
     );
 
+    phase = 'finding dashboard card rows';
     const cardRows = await page.$$(DASHBOARD_CARD_ROW_SELECTOR);
 
     for (const cardRow of cardRows) {
+      phase = 'reading dashboard card';
       const cardKey = await cardRow.evaluate((row) => {
         const element = row as unknown as {
           querySelector: (
@@ -79,12 +94,14 @@ app.get('/api/hello', async (c) => {
         continue;
       }
 
+      phase = `finding tooltip for card "${cardKey}"`;
       const tooltip = await cardRow.$(TOOLTIP_SELECTOR);
 
       if (!tooltip) {
         continue;
       }
 
+      phase = `hovering tooltip for card "${cardKey}"`;
       await tooltip.hover();
       await new Promise((resolve) =>
         setTimeout(resolve, TOOLTIP_INITIAL_WAIT_MS),
@@ -94,6 +111,7 @@ app.get('/api/hello', async (c) => {
       let detail: Record<string, string> = {};
 
       while (Date.now() - startedAt < TOOLTIP_TIMEOUT_MS) {
+        phase = `reading tooltip details for card "${cardKey}"`;
         const visibleDetails = await page.$$eval(
           TOOLTIP_POPUP_SELECTOR,
           (popups) =>
@@ -168,8 +186,41 @@ app.get('/api/hello', async (c) => {
     }
 
     return c.json(stats);
+  } catch (error) {
+    const normalizedError =
+      error instanceof Error
+        ? { name: error.name, message: error.message, stack: error.stack }
+        : { name: 'UnknownError', message: String(error), stack: undefined };
+
+    console.error('Failed to fetch GMX stats', {
+      requestId,
+      phase,
+      error: normalizedError,
+    });
+
+    return c.json(
+      {
+        error: 'Failed to fetch GMX stats',
+        requestId,
+        phase,
+        details: {
+          name: normalizedError.name,
+          message: normalizedError.message,
+        },
+      },
+      502,
+    );
   } finally {
-    await browser.close();
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (error) {
+        console.error('Failed to close browser', {
+          requestId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
   }
 });
 

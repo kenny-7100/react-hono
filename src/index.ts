@@ -15,7 +15,7 @@ app.get('/api/hello', async (c) => {
 
   try {
     const page = await browser.newPage();
-    await page.goto(STATS_URL, { waitUntil: 'networkidle2', timeout: 10_000 });
+    await page.goto(STATS_URL, { waitUntil: 'domcontentloaded', timeout: 10_000 });
     const cards = await page.waitForSelector(DASHBOARD_CARDS_SELECTOR, {
       timeout: 10_000,
     });

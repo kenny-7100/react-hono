@@ -9,8 +9,12 @@ const app = new Hono<{ Bindings: Bindings }>();
 
 const STATS_URL = 'https://app.gmx.io/stats';
 const DASHBOARD_CARDS_SELECTOR = '.DashboardV2-cards';
-const TOOLTIP_TRIGGER_SELECTOR = '.DashboardV2-cards .App-card-row .Tooltip';
-const TOOLTIP_POPUP_SELECTOR = '.Tooltip-popup';
+const DASHBOARD_CARD_ROW_SELECTOR = '.DashboardV2-cards .App-card-row';
+
+type Stat = {
+  value: string;
+  detail: Record<string, never>;
+};
 
 app.get('/api/hello', async (c) => {
   const browser = await puppeteer.launch(c.env.BROWSER);
@@ -28,50 +32,28 @@ app.get('/api/hello', async (c) => {
 
     await new Promise((resolve) => setTimeout(resolve, 25_000));
 
-    const cardHtml = await cards.evaluate(
-      (element) => (element as unknown as { outerHTML: string }).outerHTML,
+    const stats = await page.$$eval(
+      DASHBOARD_CARD_ROW_SELECTOR,
+      (rows) =>
+        rows.reduce<Record<string, Stat>>((result, row) => {
+          const element = row as unknown as HTMLElement;
+          const key = element.querySelector('.label')?.textContent?.trim();
+          const value = element
+            .querySelector('div:last-of-type')
+            ?.textContent?.trim();
+
+          if (key && value) {
+            result[key] = {
+              value,
+              detail: {},
+            };
+          }
+
+          return result;
+        }, {}),
     );
-    const tooltipTriggers = await page.$$(TOOLTIP_TRIGGER_SELECTOR);
 
-    if (tooltipTriggers.length === 0) {
-      return c.text('No tooltip trigger was found', 504);
-    }
-
-    const tooltipHtml: string[] = [];
-
-    for (const tooltipTrigger of tooltipTriggers) {
-      await tooltipTrigger.hover();
-      await new Promise((resolve) => setTimeout(resolve, 1_000));
-
-      const tooltipPopup = await page.$(TOOLTIP_POPUP_SELECTOR);
-
-      if (!tooltipPopup) {
-        continue;
-      }
-
-      tooltipHtml.push(
-        await tooltipPopup.evaluate(
-          (element) =>
-            (element as unknown as { outerHTML: string }).outerHTML,
-        ),
-      );
-    }
-
-    if (tooltipHtml.length === 0) {
-      return c.text('No tooltip popup was found', 504);
-    }
-
-    const sections = [
-      `<div style="margin-bottom:24px;padding:20px;border:1px solid #3b82f6;border-radius:12px;background:#eff6ff;color:#111827"><h2 style="margin:0 0 16px;font:600 18px/1.4 system-ui,sans-serif;color:#1d4ed8">Dashboard cards</h2>${cardHtml}</div>`,
-      ...tooltipHtml.map(
-        (html, index) =>
-          `<div style="margin-bottom:16px;padding:20px;border:1px solid #f59e0b;border-radius:12px;background:#fffbeb;color:#111827"><h2 style="margin:0 0 16px;font:600 18px/1.4 system-ui,sans-serif;color:#b45309">Tooltip ${index + 1}</h2>${html}</div>`,
-      ),
-    ];
-
-    return c.html(
-      `<main style="max-width:1600px;margin:0 auto;padding:24px;background:#f3f4f6;font-family:system-ui,sans-serif">${sections.join('')}</main>`,
-    );
+    return c.json(stats);
   } finally {
     await browser.close();
   }

@@ -13,7 +13,7 @@ const DASHBOARD_CARD_ROW_SELECTOR = '.DashboardV2-cards .App-card-row';
 
 type Stat = {
   value: string;
-  detail: Record<string, never>;
+  detail: Record<string, string>;
 };
 
 app.get('/api/hello', async (c) => {
@@ -36,7 +36,11 @@ app.get('/api/hello', async (c) => {
       DASHBOARD_CARD_ROW_SELECTOR,
       (rows) =>
         rows.reduce<Record<string, Stat>>((result, row) => {
-          const element = row as unknown as HTMLElement;
+          const element = row as unknown as {
+            querySelector: (
+              selector: string,
+            ) => { textContent: string | null } | null;
+          };
           const key = element.querySelector('.label')?.textContent?.trim();
           const value = element
             .querySelector('div:last-of-type')
@@ -52,6 +56,63 @@ app.get('/api/hello', async (c) => {
           return result;
         }, {}),
     );
+
+    const cardRows = await page.$$(DASHBOARD_CARD_ROW_SELECTOR);
+
+    for (const cardRow of cardRows) {
+      const cardKey = await cardRow.evaluate((row) => {
+        const element = row as unknown as {
+          querySelector: (
+            selector: string,
+          ) => { textContent: string | null } | null;
+        };
+
+        return element.querySelector('.label')?.textContent?.trim() ?? '';
+      });
+
+      if (!cardKey || !stats[cardKey]) {
+        continue;
+      }
+
+      const tooltip = await cardRow.$('.Tooltip');
+
+      if (!tooltip) {
+        continue;
+      }
+
+      await tooltip.hover();
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+
+      const tooltipPopup = await page.$('.Tooltip-popup');
+
+      if (!tooltipPopup) {
+        continue;
+      }
+
+      const detail = await tooltipPopup.$$eval(
+        '.Tooltip-row',
+        (rows) =>
+          rows.reduce<Record<string, string>>((result, row) => {
+            const element = row as unknown as {
+              querySelector: (
+                selector: string,
+              ) => { textContent: string | null } | null;
+            };
+            const key = element.querySelector('.label')?.textContent?.trim();
+            const value = element
+              .querySelector('span:last-of-type')
+              ?.textContent?.trim();
+
+            if (key && value) {
+              result[key] = value;
+            }
+
+            return result;
+          }, {}),
+      );
+
+      stats[cardKey].detail = detail;
+    }
 
     return c.json(stats);
   } finally {

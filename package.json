@@ -1,5 +1,5 @@
 {
-  "name": "react-hono",
+  "name": "gmtrade",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
